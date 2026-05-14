@@ -238,9 +238,9 @@ python machine.py <binary_code_file> <input_file>
 
 ## Схемы процессора
 
-- Общая схема: `img.png`
-- `Control Unit`: `img_1.png`
-- `DataPath`: `img_2.png`
+- Общая схема: `1.png`
+- Control Unit: `2.png`
+- DataPath: `3.png`
 
 ## Тестирование
 
