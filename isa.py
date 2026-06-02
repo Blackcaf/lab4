@@ -4,16 +4,14 @@ from enum import Enum
 
 class Opcode(Enum):
     """
-    Коды операций для нашего RISC-процессора.
+    Коды операций для моего RISC-процессора.
     Гарвардская архитектура: память команд отделена от памяти данных.
     Forth-стек реализован поверх RISC-инструкций и памяти данных.
     """
 
-    # --- Системные инструкции ---
     NOP = 0x00
     HALT = 0x01
 
-    # --- Арифметические и логические R-type (Регистр-Регистр) ---
     ADD = 0x10
     SUB = 0x11
     MUL = 0x12
@@ -26,7 +24,6 @@ class Opcode(Enum):
     SHL = 0x19
     SHR = 0x1A
 
-    # --- Инструкции I-type (с непосредственным значением) ---
     ADDI = 0x20
     LOAD = 0x21
     STORE = 0x22
@@ -37,19 +34,17 @@ class Opcode(Enum):
     IN = 0x27
     OUT = 0x28
 
-    # --- Инструкции для работы со стеком ---
     PUSH = 0x30
     POP = 0x31
 
-    # --- Инструкции J-type (безусловные переходы) ---
     JMP = 0x32
     CALL = 0x33
     RET = 0x34
+    JMPR = 0x35
+    CALLR = 0x36
 
 
 class Reg(Enum):
-    """Регистры процессора. 8 регистров общего назначения."""
-
     ZERO = 0
     SP = 1
     RA = 2
@@ -66,10 +61,34 @@ IO_OUTPUT_PORT = 1
 
 
 class Instruction:
-    """
-    Представление одной 32-битной машинной инструкции.
-    Определяет методы для кодирования в бинарный формат.
-    """
+    _R_TYPE_OPCODES = {
+        Opcode.ADD,
+        Opcode.SUB,
+        Opcode.MUL,
+        Opcode.DIV,
+        Opcode.MOD,
+        Opcode.AND,
+        Opcode.OR,
+        Opcode.XOR,
+        Opcode.CMP,
+        Opcode.SHL,
+        Opcode.SHR,
+    }
+
+    _I_TYPE_OPCODES = {
+        Opcode.ADDI,
+        Opcode.LOAD,
+        Opcode.STORE,
+        Opcode.JZ,
+        Opcode.JNZ,
+        Opcode.LUI,
+        Opcode.ORI,
+        Opcode.IN,
+        Opcode.OUT,
+        Opcode.JMPR,
+        Opcode.CALLR,
+    }
+
 
     def __init__(
         self,
@@ -84,54 +103,27 @@ class Instruction:
         self.rs = rs
         self.rt = rt
         self.rd = rd
-        self.imm = imm  # 16-bit immediate
-        self.addr = addr  # 26-bit address for J-type
+        self.imm = imm
+        self.addr = addr
 
     def to_binary(self) -> bytes:
-        """Кодирование инструкции в 32-битное слово (big-endian)."""
         opcode_val = self.opcode.value & 0x3F
         word = 0
 
-        # R-type: [opcode:6][rs:5][rt:5][rd:5][unused:11]
-        if self.opcode in [
-            Opcode.ADD,
-            Opcode.SUB,
-            Opcode.MUL,
-            Opcode.DIV,
-            Opcode.MOD,
-            Opcode.AND,
-            Opcode.OR,
-            Opcode.XOR,
-            Opcode.CMP,
-            Opcode.SHL,
-            Opcode.SHR,
-        ]:
+        if self.opcode in self._R_TYPE_OPCODES:
             word = (
                 (opcode_val << 26) | (self.rs << 21) | (self.rt << 16) | (self.rd << 11)
             )
 
-        # I-type: [opcode:6][rs:5][rt:5][imm:16]
-        elif self.opcode in [
-            Opcode.ADDI,
-            Opcode.LOAD,
-            Opcode.STORE,
-            Opcode.JZ,
-            Opcode.JNZ,
-            Opcode.LUI,
-            Opcode.ORI,
-            Opcode.IN,
-            Opcode.OUT,
-        ]:
-            if self.opcode == Opcode.LUI:
-                self.rs = 0
+        elif self.opcode in self._I_TYPE_OPCODES:
+            rs = 0 if self.opcode == Opcode.LUI else self.rs
             word = (
                 (opcode_val << 26)
-                | (self.rs << 21)
+                | (rs << 21)
                 | (self.rt << 16)
                 | (self.imm & 0xFFFF)
             )
 
-        # J-type: [opcode:6][addr:26]
         elif self.opcode in [Opcode.JMP, Opcode.CALL]:
             word = (opcode_val << 26) | (self.addr & 0x03FFFFFF)
 
@@ -145,52 +137,34 @@ class Instruction:
         return struct.pack(">I", word)
 
     def to_hex(self, addr: int) -> str:
-        """Генерация строкового представления для листинга (адрес, код, мнемоника)."""
         hex_code = self.to_binary().hex().upper()
         mnemonic = self.get_mnemonic()
         return f"0x{addr:04X}: {hex_code}  {mnemonic}"
 
     def get_mnemonic(self) -> str:
-        """Получить мнемонику инструкции."""
-        if self.opcode in [
-            Opcode.ADD,
-            Opcode.SUB,
-            Opcode.MUL,
-            Opcode.DIV,
-            Opcode.MOD,
-            Opcode.AND,
-            Opcode.OR,
-            Opcode.XOR,
-            Opcode.CMP,
-            Opcode.SHL,
-            Opcode.SHR,
-        ]:
+        if self.opcode in self._R_TYPE_OPCODES:
             return f"{self.opcode.name:<5} R{self.rd}, R{self.rs}, R{self.rt}"
 
-        elif self.opcode in [Opcode.ADDI, Opcode.ORI]:
-            return f"{self.opcode.name:<5} R{self.rt}, R{self.rs}, {self.imm}"
-        elif self.opcode in [Opcode.LOAD, Opcode.STORE]:
-            return f"{self.opcode.name:<5} R{self.rt}, {self.imm}(R{self.rs})"
-        elif self.opcode == Opcode.IN:
-            return f"IN    R{self.rt}, port {self.imm}"
-        elif self.opcode == Opcode.OUT:
-            return f"OUT   port {self.imm}, R{self.rt}"
-        elif self.opcode in [Opcode.JZ, Opcode.JNZ]:
-            return f"{self.opcode.name:<5} R{self.rt}, {self.imm}"
-
-        elif self.opcode == Opcode.LUI:
-            return f"LUI   R{self.rt}, 0x{self.imm:04X}"
-
-        elif self.opcode in [Opcode.JMP, Opcode.CALL]:
-            return f"{self.opcode.name:<5} 0x{self.addr:07X}"
-
-        elif self.opcode == Opcode.PUSH:
-            return f"PUSH  R{self.rs}"
-        elif self.opcode == Opcode.POP:
-            return f"POP   R{self.rt}"
-
-        else:
-            return self.opcode.name
+        templates = {
+            Opcode.ADDI: f"{self.opcode.name:<5} R{self.rt}, R{self.rs}, {self.imm}",
+            Opcode.ORI: f"{self.opcode.name:<5} R{self.rt}, R{self.rs}, {self.imm}",
+            Opcode.LOAD: f"{self.opcode.name:<5} R{self.rt}, {self.imm}(R{self.rs})",
+            Opcode.STORE: f"{self.opcode.name:<5} R{self.rt}, {self.imm}(R{self.rs})",
+            Opcode.IN: f"IN    R{self.rt}, port {self.imm}",
+            Opcode.OUT: f"OUT   port {self.imm}, R{self.rt}",
+            Opcode.JMPR: f"JMPR  R{self.rs}",
+            Opcode.CALLR: f"CALLR R{self.rs}",
+            Opcode.JZ: f"{self.opcode.name:<5} R{self.rt}, {self.imm}",
+            Opcode.JNZ: f"{self.opcode.name:<5} R{self.rt}, {self.imm}",
+            Opcode.LUI: f"LUI   R{self.rt}, 0x{self.imm:04X}",
+            Opcode.JMP: f"{self.opcode.name:<5} 0x{self.addr:07X}",
+            Opcode.CALL: f"{self.opcode.name:<5} 0x{self.addr:07X}",
+            Opcode.PUSH: f"PUSH  R{self.rs}",
+            Opcode.POP: f"POP   R{self.rt}",
+        }
+        if self.opcode in templates:
+            return templates[self.opcode]
+        return self.opcode.name
 
     def __repr__(self):
         return f"Instruction({self.get_mnemonic()})"
