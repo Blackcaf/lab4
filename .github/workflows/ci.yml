@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Ruff Format Check
+        run: poetry run ruff format --check .
+
+      - name: Ruff Lint
+        run: poetry run ruff check .
+
+      - name: Mypy
+        run: poetry run mypy isa.py microcode.py machine.py translator.py golden_test.py binary_image.py translator_exceptions.py translator_artifacts.py forth_tokenizer.py test_binary_image.py test_translator_control_flow.py test_isa_encoding.py test_forth_tokenizer.py
+
+      - name: Pytest
+        run: poetry run pytest
+
+      - name: Coverage Gate
+        run: poetry run coverage run -m pytest && poetry run coverage report --fail-under=85
