@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "csa-lab4"
+version = "0.1.0"
+description = "lab4"
+authors = ["Mantush Daniil"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.14"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.5.0"
+pytest = "^8.2.2"
+pytest-golden = "^0.2.2"
+pyyaml = "^6.0.1"
+coverage = "^7.5.4"
+mypy = "^1.10.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+exclude = [ ".venv", "__pypackages__", ".git", "build", "dist", "golden" ]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C90", "I", "B", "A"]
+ignore = ["ANN", "D", "E501", "B008"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q -p no:cacheprovider"
+testpaths = [ "." ]
+enable_assertion_pass_hook = true
+
+[tool.mypy]
+python_version = "3.14"
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_optional = true
+pretty = true
