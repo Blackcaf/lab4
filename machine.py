@@ -1,20 +1,27 @@
 from __future__ import annotations
 
 import logging
-import struct
 import sys
 from collections import deque
-from typing import Tuple
+from typing import TypedDict
 
+from binary_image import bytes_to_words, split_code_and_data
 from isa import IO_INPUT_PORT, IO_OUTPUT_PORT, MEMORY_SIZE, Instruction, Opcode, Reg
 from microcode import MicroOp, get_microcode_rom
 
 CACHE_HIT_LATENCY = 1
 CACHE_MISS_LATENCY = 10
 
-class CacheLine:
-    """Моделирует одну строку кеша."""
 
+class DecodedInstruction(TypedDict):
+    opcode: Opcode
+    rs: int
+    rt: int
+    rd: int
+    imm: int
+    addr: int
+
+class CacheLine:
     def __init__(self) -> None:
         self.valid = False
         self.tag = -1
@@ -30,7 +37,7 @@ class Cache:
     Взаимодействует с основной памятью.
     """
 
-    def __init__(self, size_in_lines, memory, name: str) -> None:
+    def __init__(self, size_in_lines: int, memory: "Memory", name: str) -> None:
         assert size_in_lines > 0 and (
             size_in_lines & (size_in_lines - 1) == 0
         ), "Cache size must be a power of 2"
@@ -39,15 +46,13 @@ class Cache:
         self.memory = memory
         self.name = name
 
-    def _get_line_and_tag(self, addr) -> Tuple[int, int]:
-        index_bits = (self.size - 1).bit_length() - 1
+    def _get_line_and_tag(self, addr: int) -> tuple[int, int]:
         index_bits = (self.size - 1).bit_length() - 1
         line_index = addr & ((1 << index_bits) - 1)
         tag = addr >> index_bits
         return line_index, tag
 
-    def read(self, addr) -> Tuple[int, int]:
-        """Чтение данных из кеша. Возвращает (данные, задержка)."""
+    def read(self, addr: int) -> tuple[int, int]:
         line_index, tag = self._get_line_and_tag(addr)
         line = self.lines[line_index]
         if line.valid and line.tag == tag:
@@ -63,11 +68,7 @@ class Cache:
             line.data = data
             return data, CACHE_MISS_LATENCY
 
-    def write(self, addr, data) -> int:
-        """
-        Запись данных в кеш (write-through, no-write-allocate).
-        Возвращает задержку.
-        """
+    def write(self, addr: int, data: int) -> int:
         line_index, tag = self._get_line_and_tag(addr)
         line = self.lines[line_index]
         is_hit = line.valid and line.tag == tag
@@ -91,29 +92,25 @@ class Cache:
 
 
 class Memory:
-    """Линейная память без устройств ввода-вывода."""
-
-    def __init__(self, size) -> None:
+    def __init__(self, size: int) -> None:
         self.size = size
         self.memory = [0] * size
- 
-    def write(self, addr, value):
+
+    def write(self, addr: int, value: int):
         assert 0 <= addr < self.size, f"Invalid memory address: {addr}"
         self.memory[addr] = value
 
-    def read(self, addr):
+    def read(self, addr: int) -> int:
         assert 0 <= addr < self.size, f"Invalid memory address: {addr}"
         return self.memory[addr]
 
 
 class PortController:
-    """Port-mapped ввод-вывод: устройства не занимают адреса памяти."""
+    def __init__(self, input_buffer: list[str]) -> None:
+        self.input_buffer: deque[str] = deque(input_buffer)
+        self.output_buffer: list[str] = []
 
-    def __init__(self, input_buffer) -> None:
-        self.input_buffer = deque(input_buffer)
-        self.output_buffer = []
-
-    def write(self, port, value):
+    def write(self, port: int, value: int):
         if port == IO_OUTPUT_PORT:
             char = chr(value & 0xFF)
             logging.info(f"PORT I/O: Write to OUTPUT port {port}: '{char}'")
@@ -121,11 +118,11 @@ class PortController:
         else:
             raise ValueError(f"Unknown output port: {port}")
 
-    def read(self, port):
+    def read(self, port: int) -> int | None:
         if port == IO_INPUT_PORT:
             if not self.input_buffer:
-                logging.warning("PORT I/O: Input buffer is empty. Returning 0.")
-                return 0
+                logging.warning("PORT I/O: Input buffer exhausted.")
+                return None
             char = self.input_buffer.popleft()
             logging.info(f"PORT I/O: Read from INPUT port {port}: '{char}'")
             return ord(char)
@@ -133,19 +130,13 @@ class PortController:
 
 
 class DataPath:
-    """
-    Тракт данных. Содержит все регистры, АЛУ и интерфейс к памяти.
-    Управляется сигналами от ControlUnit.
-    """
-
-    def __init__(self, memory_size, cache_size, input_buffer):
+    def __init__(self, memory_size: int, cache_size: int, input_buffer: list[str]):
         self.instruction_memory = Memory(memory_size)
         self.data_memory = Memory(memory_size)
         self.instruction_cache = Cache(cache_size, self.instruction_memory, "I-CACHE")
         self.data_cache = Cache(cache_size, self.data_memory, "D-CACHE")
         self.ports = PortController(input_buffer)
 
-        # Регистры
         self.gpr = [0] * 8
         self.gpr[Reg.SP.value] = memory_size - 1000
         self.data_sp = memory_size - 5000
@@ -159,15 +150,14 @@ class DataPath:
         self.zero_flag = False
 
     @property
-    def sp(self):
+    def sp(self) -> int:
         return self.gpr[Reg.SP.value]
 
     @sp.setter
-    def sp(self, value):
+    def sp(self, value: int):
         self.gpr[Reg.SP.value] = value
 
-    def decode_ir(self):
-        """Декодирует инструкцию из `ir_reg` в структурированный вид."""
+    def decode_ir(self) -> DecodedInstruction:
         opcode_val = (self.ir_reg >> 26) & 0x3F
         rs = (self.ir_reg >> 21) & 0x1F
         rt = (self.ir_reg >> 16) & 0x1F
@@ -226,10 +216,6 @@ class DataPath:
 
 
 class ControlUnit:
-    """
-    Микрокомандный блок управления. "Проигрывает" микрокод для каждой инструкции.
-    """
-
     def __init__(self, datapath: DataPath):
         self.datapath = datapath
         self.microcode_rom = get_microcode_rom()
@@ -237,7 +223,7 @@ class ControlUnit:
         self.tick_counter = 0
         self.stall_cycles = 0
         self.halted = False
-        self.current_decoded_ir = {
+        self.current_decoded_ir: DecodedInstruction = {
             "opcode": Opcode.NOP,
             "rs": 0,
             "rt": 0,
@@ -247,7 +233,6 @@ class ControlUnit:
         }
 
     def tick(self):
-        """Выполняет один такт симуляции."""
         self.tick_counter += 1
 
         if self.stall_cycles > 0:
@@ -291,7 +276,7 @@ class ControlUnit:
         else:
             self.micro_pc = next_micro_pc
 
-    def _handle_pc_operations(self, op: MicroOp, ir: dict, dp: "DataPath"):
+    def _handle_pc_operations(self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"):
         if op == MicroOp.LATCH_PC_INC:
             dp.pc += 1
         elif op == MicroOp.LATCH_PC_ADDR:
@@ -300,7 +285,9 @@ class ControlUnit:
         elif op == MicroOp.LATCH_PC_ALU:
             dp.pc = dp.alu_out
 
-    def _handle_mar_mdr_ir_operations(self, op: MicroOp, ir: dict, dp: "DataPath"):
+    def _handle_mar_mdr_ir_operations(
+        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+    ):
         if op == MicroOp.LATCH_MAR_PC:
             dp.mar = dp.pc
         elif op == MicroOp.LATCH_MAR_ALU:
@@ -320,7 +307,9 @@ class ControlUnit:
         elif op == MicroOp.LATCH_MDR_A:
             dp.mdr = dp.alu_a
 
-    def _get_alu_a_value(self, op: MicroOp, ir: dict, dp: "DataPath") -> int:
+    def _get_alu_a_value(
+        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+    ) -> int:
         if op == MicroOp.LATCH_A_RS:
             return dp.gpr[ir["rs"]]
         elif op == MicroOp.LATCH_A_RT:
@@ -340,7 +329,7 @@ class ControlUnit:
             return dp.pc
         raise ValueError(f"Unknown LATCH_A operation: {op}")
 
-    def _get_alu_b_value(self, op: MicroOp, ir: dict) -> int:
+    def _get_alu_b_value(self, op: MicroOp, ir: DecodedInstruction) -> int:
         if op == MicroOp.LATCH_B_RT:
             return self.datapath.gpr[ir["rt"]]
         elif op == MicroOp.LATCH_B_IMM:
@@ -349,7 +338,9 @@ class ControlUnit:
             return 1
         raise ValueError(f"Unknown LATCH_B operation: {op}")
 
-    def _handle_alu_input_latching(self, op: MicroOp, ir: dict, dp: "DataPath"):
+    def _handle_alu_input_latching(
+        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+    ):
         if op.name.startswith("LATCH_A_"):
             dp.alu_a = self._get_alu_a_value(op, ir, dp)
         elif op.name.startswith("LATCH_B_"):
@@ -357,7 +348,9 @@ class ControlUnit:
         else:
             raise ValueError(f"Unhandled ALU input latching op: {op}")
 
-    def _handle_alu_output_latching(self, op: MicroOp, ir: dict, dp: "DataPath"):
+    def _handle_alu_output_latching(
+        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+    ):
         if op == MicroOp.LATCH_RD_ALU:
             dp.gpr[ir["rd"]] = dp.alu_out
         elif op == MicroOp.LATCH_RT_ALU:
@@ -378,7 +371,9 @@ class ControlUnit:
             else:
                 dp.sp = dp.alu_out
 
-    def _handle_branch_operations(self, op: MicroOp, ir: dict, dp: "DataPath"):
+    def _handle_branch_operations(
+        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+    ):
         if op == MicroOp.BRANCH_IF_ZERO:
             if dp.zero_flag:
                 dp.alu_a = dp.pc
@@ -392,7 +387,9 @@ class ControlUnit:
                 dp.alu_op(MicroOp.ALU_ADD)
                 dp.pc = dp.alu_out
 
-    def _handle_cache_operations(self, op: MicroOp, ir: dict, dp: "DataPath"):
+    def _handle_cache_operations(
+        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+    ):
         if op == MicroOp.INSTR_READ:
             data, latency = dp.instruction_cache.read(dp.mar)
             dp.mdr = data
@@ -411,18 +408,24 @@ class ControlUnit:
             self.halted = True
             logging.info("HALT instruction executed. Stopping simulation.")
 
-    def _handle_port_operations(self, op: MicroOp, ir: dict, dp: "DataPath"):
+    def _handle_port_operations(
+        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+    ):
         port = ir["imm"]
         if op == MicroOp.PORT_READ:
-            dp.mdr = dp.ports.read(port)
+            port_value = dp.ports.read(port)
+            if port_value is None:
+                self.halted = True
+                logging.info("Simulation stopped: stream input exhausted.")
+                return
+            dp.mdr = port_value
         elif op == MicroOp.PORT_WRITE:
             logging.info(
                 f"PORT I/O: OUT value {dp.mdr} ('{chr(dp.mdr & 0xFF)}') to port {port}"
             )
             dp.ports.write(port, dp.mdr)
 
-    def execute_micro_op(self, op: MicroOp, ir: dict):
-        """Исполнение одной микро-операции."""
+    def execute_micro_op(self, op: MicroOp, ir: DecodedInstruction):
         dp = self.datapath
         logging.debug(f"TICK {self.tick_counter}: Executing micro-op: {op.name}")
 
@@ -455,7 +458,6 @@ class ControlUnit:
 
 
 def _run_simulation_loop(control_unit: "ControlUnit", datapath: "DataPath", limit: int):
-    """Внутренний цикл симуляции."""
     while not control_unit.halted and control_unit.tick_counter < limit:
         try:
             decoded = control_unit.current_decoded_ir
@@ -494,22 +496,8 @@ def _run_simulation_loop(control_unit: "ControlUnit", datapath: "DataPath", limi
 
 
 def simulation(binary_code: bytes, input_str: str, limit: int, cache_size: int):
-    """Основной цикл симуляции."""
-    words = []
-    for i in range(0, len(binary_code), 4):
-        words.append(struct.unpack(">I", binary_code[i : i + 4])[0])
-
-    last_halt_idx = -1
-    for i, word in enumerate(words):
-        opcode_val = (word >> 26) & 0x3F
-        if opcode_val == Opcode.HALT.value:
-            last_halt_idx = i
-
-    if last_halt_idx == -1:
-        raise ValueError("HALT instruction not found in the binary file.")
-
-    code_words = words[: last_halt_idx + 1]
-    data_words = words[last_halt_idx + 1 :]
+    words = bytes_to_words(binary_code)
+    code_words, data_words = split_code_and_data(words)
     datapath = DataPath(MEMORY_SIZE, cache_size, list(input_str))
 
     for i, word in enumerate(code_words):
@@ -541,7 +529,6 @@ def simulation(binary_code: bytes, input_str: str, limit: int, cache_size: int):
 
 
 def main(code_file: str, input_file: str):
-    """Главная функция для запуска симулятора из командной строки."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)-8s %(message)s")
     try:
         with open(code_file, "rb") as f:
