@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import logging
-import struct
 import sys
-from typing import Any, Iterator
+from collections.abc import Sequence
+from typing import Any, Iterator, cast
 
+from forth_tokenizer import tokenize_source
 from isa import IO_INPUT_PORT, IO_OUTPUT_PORT, Instruction, Opcode, Reg
+from translator_artifacts import write_binary_and_listing
+from translator_exceptions import TranslatorSyntaxError, UnknownWordError
 
 
 class Translator:
@@ -24,23 +27,15 @@ class Translator:
         self.variable_relocations: dict[int, str] = {}
 
     def _get_built_in_symbols(self) -> dict[str, Any]:
-        """
-        Определяет встроенные слова.
-        Простые слова отображаются на лямбда-функции, которые генерируют код напрямую.
-        Сложные слова помечены как "subroutine" и будут заменены на CALLы к подпрограммам.
-        """
         return {
-            # Арифметика (простые)
             "+": lambda: self.emit([self.emit_binary_op_instr(Opcode.ADD)]),
             "-": lambda: self.emit([self.emit_binary_op_instr(Opcode.SUB)]),
             "*": lambda: self.emit([self.emit_binary_op_instr(Opcode.MUL)]),
             "/": lambda: self.emit([self.emit_binary_op_instr(Opcode.DIV)]),
             "MOD": lambda: self.emit([self.emit_binary_op_instr(Opcode.MOD)]),
-            # ОПЕРАЦИИ СРАВНЕНИЯ И ЛОГИКИ:
             "AND": lambda: self.emit([self.emit_binary_op_instr(Opcode.AND)]),
             "OR": lambda: self.emit([self.emit_binary_op_instr(Opcode.OR)]),
             "XOR": lambda: self.emit([self.emit_binary_op_instr(Opcode.XOR)]),
-            # Комплексные слова, реализуемые как подпрограммы
             "DROP": "subroutine",
             "=": "subroutine",
             "DUP": "subroutine",
@@ -67,36 +62,37 @@ class Translator:
             "<=": "subroutine",
             ">=": "subroutine",
             "0<>": "subroutine",
-            # Управляющие структуры (обрабатываются во время компиляции)
             "IF": self.emit_if,
             "ELSE": self.emit_else,
             "THEN": self.emit_then,
             ":": self.start_word_definition,
             ";": self.end_word_definition,
-            # Циклы
+            "EXECUTE": self.emit_execute,
             "BEGIN": self.emit_begin,
             "WHILE": self.emit_while,
             "REPEAT": self.emit_repeat,
             "UNTIL": self.emit_until,
-            # Системные слова
             "HALT": lambda: self.emit([Instruction(Opcode.HALT)]),
             "EXIT": lambda: self.emit([Instruction(Opcode.RET)]),
             "NOP": lambda: self.emit([Instruction(Opcode.NOP)]),
         }
 
-    def emit(self, instructions: list[Instruction | list[Instruction]]):
-        """Добавляет инструкции в код, рекурсивно раскрывая списки."""
+    def emit(
+        self,
+        instructions: (
+            list[Instruction]
+            | list[list[Instruction]]
+            | list[Instruction | list[Instruction]]
+            | tuple[Instruction, ...]
+        ),
+    ):
         for instr in instructions:
-            if isinstance(instr, list):
+            if isinstance(instr, Sequence) and not isinstance(instr, Instruction):
                 self.emit(instr)
             else:
-                self.code.append(instr)
+                self.code.append(cast(Instruction, instr))
 
     def emit_load_immediate(self, value: int, target_reg: int) -> list[Instruction]:
-        """
-        Генерирует инструкции для загрузки 32-битного непосредственного значения
-        в регистр. Использует LUI и ORI для полной поддержки 32-битного диапазона.
-        """
         if -32768 <= value <= 32767:
             return [
                 Instruction(Opcode.ADDI, rs=Reg.ZERO.value, rt=target_reg, imm=value)
@@ -115,13 +111,11 @@ class Translator:
     def emit_push_instr(
         self, value: int, target_reg: int = Reg.T0.value
     ) -> list[Instruction]:
-        """Генерация инструкций для PUSH числа на стек с поддержкой 32-битных чисел."""
         load_instructions = self.emit_load_immediate(value, target_reg)
         push_instruction = Instruction(Opcode.PUSH, rs=target_reg)
         return load_instructions + [push_instruction]
 
     def emit_binary_op_instr(self, opcode: Opcode) -> list[Instruction]:
-        """Генерация инструкций для бинарных операций (+, -, * и т.д.)."""
         return [
             Instruction(Opcode.POP, rt=Reg.T1.value),
             Instruction(Opcode.POP, rt=Reg.T0.value),
@@ -129,34 +123,90 @@ class Translator:
             Instruction(Opcode.PUSH, rs=Reg.T0.value),
         ]
 
+    def emit_execute(self):
+        self.emit(
+            [
+                Instruction(Opcode.POP, rt=Reg.T0.value),
+                Instruction(Opcode.CALLR, rs=Reg.T0.value, imm=0),
+            ]
+        )
+
+    def _compile_execution_token_literal(self, token_stream: Iterator[str]):
+        word_name = next(token_stream)
+        upper_word_name = word_name.upper()
+        symbol = self.symbols.get(upper_word_name)
+        if isinstance(symbol, int):
+            self.emit(self.emit_push_instr(symbol))
+            return
+        raise ValueError(
+            f"Cannot build execution token for '{word_name}': word is not executable."
+        )
+
+    def start_word_definition(self, word: str):
+        self.symbols[word.upper()] = len(self.code)
+
+    def end_word_definition(self):
+        self.emit([Instruction(Opcode.RET)])
+
+    def _parse_string(self, token_stream: Iterator[str]) -> str:
+        buffer = []
+        for token in token_stream:
+            if token.endswith('"'):
+                if len(token) > 1:
+                    buffer.append(token[:-1])
+                return " ".join(buffer)
+            buffer.append(token)
+        raise TranslatorSyntaxError("Unterminated string literal")
+
+    def _compile_string_literal(self, content: str):
+        string_addr_load_instr_index = len(self.code)
+        self.string_relocations[string_addr_load_instr_index] = content
+        self.emit(
+            [
+                Instruction(Opcode.LUI, rt=Reg.T0.value, imm=0),
+                Instruction(Opcode.ORI, rs=Reg.T0.value, rt=Reg.T0.value, imm=0),
+                Instruction(Opcode.PUSH, rs=Reg.T0.value),
+            ]
+        )
+
+    def _compile_char_literal(self, token_stream: Iterator[str]):
+        char_token = next(token_stream)
+        if not char_token:
+            raise TranslatorSyntaxError("[CHAR] must be followed by a character token.")
+        char_code = ord(char_token[0])
+        self.emit(self.emit_push_instr(char_code))
+
+    def _tokenize(self, source: str) -> list[str]:
+        return tokenize_source(source)
+
+    def _pop_control_flow(self, expected_types: tuple[str, ...], error_message: str):
+        if not self.control_flow_stack:
+            raise TranslatorSyntaxError(error_message)
+        info = self.control_flow_stack.pop()
+        if info["type"] not in expected_types:
+            raise TranslatorSyntaxError(error_message)
+        return info
+
     def emit_if(self):
-        # ( flag -- )
         self.emit([Instruction(Opcode.POP, rt=Reg.T0.value)])
         jz_instr = Instruction(Opcode.JZ, rt=Reg.T0.value, imm=0)
         self.emit([jz_instr])
         self.control_flow_stack.append({"type": "IF", "addr": len(self.code) - 1})
 
     def emit_else(self):
-        if_info = self.control_flow_stack.pop()
-        if if_info["type"] != "IF":
-            raise SyntaxError("ELSE without IF")
-
+        if_info = self._pop_control_flow(("IF",), "ELSE without IF")
         jmp_instr = Instruction(Opcode.JMP, addr=0)
         self.emit([jmp_instr])
-
         else_addr = len(self.code)
         self.code[if_info["addr"]].imm = else_addr - (if_info["addr"] + 1)
-
         self.control_flow_stack.append({"type": "ELSE", "addr": len(self.code) - 1})
 
     def emit_then(self):
-        last_info = self.control_flow_stack.pop()
-        if last_info["type"] not in ["IF", "ELSE"]:
-            raise SyntaxError("THEN without matching IF/ELSE")
-
+        last_info = self._pop_control_flow(
+            ("IF", "ELSE"), "THEN without matching IF/ELSE"
+        )
         exit_addr = len(self.code)
         jump_instr = self.code[last_info["addr"]]
-
         if jump_instr.opcode == Opcode.JMP:
             jump_instr.addr = exit_addr
         else:
@@ -166,20 +216,25 @@ class Translator:
         self.control_flow_stack.append({"type": "BEGIN", "addr": len(self.code)})
 
     def emit_while(self):
+        if (
+            not self.control_flow_stack
+            or self.control_flow_stack[-1]["type"] != "BEGIN"
+        ):
+            raise TranslatorSyntaxError("WHILE without matching BEGIN")
         self.emit([Instruction(Opcode.POP, rt=Reg.T0.value)])
         jz_instr = Instruction(Opcode.JZ, rt=Reg.T0.value, imm=0)
         self.emit([jz_instr])
         self.control_flow_stack.append({"type": "WHILE", "addr": len(self.code) - 1})
 
     def emit_repeat(self):
-        while_info = self.control_flow_stack.pop()
-        begin_info = self.control_flow_stack.pop()
+        while_info = self._pop_control_flow(("WHILE",), "REPEAT without matching WHILE")
+        begin_info = self._pop_control_flow(("BEGIN",), "REPEAT without matching BEGIN")
         self.emit([Instruction(Opcode.JMP, addr=begin_info["addr"])])
         exit_addr = len(self.code)
         self.code[while_info["addr"]].imm = exit_addr - (while_info["addr"] + 1)
 
     def emit_until(self):
-        begin_info = self.control_flow_stack.pop()
+        begin_info = self._pop_control_flow(("BEGIN",), "UNTIL without matching BEGIN")
         self.emit(
             [
                 Instruction(Opcode.POP, rt=Reg.T0.value),
@@ -192,7 +247,6 @@ class Translator:
         )
 
     def _inject_built_in_subroutines(self):
-        """Генерирует код для всех подпрограмм и сохраняет их адреса."""
         simple_subroutines = [
             ("EMIT", self._generate_emit_sub),
             ("KEY", self._generate_key_sub),
@@ -225,11 +279,11 @@ class Translator:
                 generator()
         if self.symbols.get("NOT") == "subroutine":
             self.symbols["NOT"] = self.symbols["0="]
+
         dependent_subroutines = [
             ("CR", self._generate_cr_sub),
             ("TYPE", self._generate_type_sub),
         ]
-
         for name, generator in dependent_subroutines:
             if self.symbols.get(name.upper()) == "subroutine":
                 self.symbols[name] = len(self.code)
@@ -308,12 +362,11 @@ class Translator:
         self.emit([Instruction(Opcode.POP, rt=Reg.T0.value), Instruction(Opcode.RET)])
 
     def _generate_rot_sub(self):
-        """Генерирует подпрограмму для ROT ( a b c -- b c a )."""
         self.emit(
             [
-                Instruction(Opcode.POP, rt=Reg.T2.value),  # T2 <- c (верхний элемент)
-                Instruction(Opcode.POP, rt=Reg.T1.value),  # T1 <- b
-                Instruction(Opcode.POP, rt=Reg.T0.value),  # T0 <- a
+                Instruction(Opcode.POP, rt=Reg.T2.value),
+                Instruction(Opcode.POP, rt=Reg.T1.value),
+                Instruction(Opcode.POP, rt=Reg.T0.value),
                 Instruction(Opcode.PUSH, rs=Reg.T1.value),
                 Instruction(Opcode.PUSH, rs=Reg.T2.value),
                 Instruction(Opcode.PUSH, rs=Reg.T0.value),
@@ -322,43 +375,35 @@ class Translator:
         )
 
     def _generate_type_sub(self):
-        """
-        Генерирует подпрограмму TYPE ( addr -- )
-        addr - адрес p-строки (указывает на байт/слово с длиной)
-        """
         emit_sub_addr = self.symbols.get("EMIT")
         if not isinstance(emit_sub_addr, int):
             raise RuntimeError(
                 "EMIT subroutine not found when generating TYPE subroutine"
             )
-
-        pre_loop_code = [
-            Instruction(Opcode.POP, rt=Reg.T0.value),  # T0 = base_addr
-            Instruction(
-                Opcode.LOAD, rt=Reg.T1.value, rs=Reg.T0.value, imm=0
-            ),  # T1 = length
-            Instruction(
-                Opcode.ADDI, rs=Reg.T0.value, rt=Reg.T0.value, imm=1
-            ),  # T0 = &char[0]
-        ]
-        self.emit(pre_loop_code)
+        self.emit(
+            [
+                Instruction(Opcode.POP, rt=Reg.T0.value),
+                Instruction(Opcode.LOAD, rt=Reg.T1.value, rs=Reg.T0.value, imm=0),
+                Instruction(Opcode.ADDI, rs=Reg.T0.value, rt=Reg.T0.value, imm=1),
+            ]
+        )
         type_loop_start_addr = len(self.code)
-        jz_instruction = Instruction(Opcode.JZ, rt=Reg.T1.value, imm=0)
-        self.emit([jz_instruction])
+        self.emit([Instruction(Opcode.JZ, rt=Reg.T1.value, imm=0)])
         type_jz_to_end_loop_idx = len(self.code) - 1
-        loop_body_code = [
-            Instruction(Opcode.PUSH, rs=Reg.T0.value),
-            Instruction(Opcode.PUSH, rs=Reg.T1.value),
-            Instruction(Opcode.LOAD, rt=Reg.T2.value, rs=Reg.T0.value, imm=0),
-            Instruction(Opcode.PUSH, rs=Reg.T2.value),
-            Instruction(Opcode.CALL, addr=emit_sub_addr),
-            Instruction(Opcode.POP, rt=Reg.T1.value),
-            Instruction(Opcode.POP, rt=Reg.T0.value),
-            Instruction(Opcode.ADDI, rs=Reg.T0.value, rt=Reg.T0.value, imm=1),
-            Instruction(Opcode.ADDI, rs=Reg.T1.value, rt=Reg.T1.value, imm=-1),
-            Instruction(Opcode.JMP, addr=type_loop_start_addr),
-        ]
-        self.emit(loop_body_code)
+        self.emit(
+            [
+                Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                Instruction(Opcode.PUSH, rs=Reg.T1.value),
+                Instruction(Opcode.LOAD, rt=Reg.T2.value, rs=Reg.T0.value, imm=0),
+                Instruction(Opcode.PUSH, rs=Reg.T2.value),
+                Instruction(Opcode.CALL, addr=emit_sub_addr),
+                Instruction(Opcode.POP, rt=Reg.T1.value),
+                Instruction(Opcode.POP, rt=Reg.T0.value),
+                Instruction(Opcode.ADDI, rs=Reg.T0.value, rt=Reg.T0.value, imm=1),
+                Instruction(Opcode.ADDI, rs=Reg.T1.value, rt=Reg.T1.value, imm=-1),
+                Instruction(Opcode.JMP, addr=type_loop_start_addr),
+            ]
+        )
         after_loop_addr = len(self.code)
         self.code[type_jz_to_end_loop_idx].imm = after_loop_addr - (
             type_jz_to_end_loop_idx + 1
@@ -366,7 +411,6 @@ class Translator:
         self.emit([Instruction(Opcode.RET)])
 
     def _generate_not_equal_sub(self):
-        """Генерирует подпрограмму для <> (не равно)."""
         self.emit(
             [
                 Instruction(Opcode.POP, rt=Reg.T1.value),
@@ -374,7 +418,7 @@ class Translator:
                 Instruction(
                     Opcode.CMP, rd=Reg.T2.value, rs=Reg.T0.value, rt=Reg.T1.value
                 ),
-                self.emit_load_immediate(1, Reg.T1.value),
+                *self.emit_load_immediate(1, Reg.T1.value),
                 Instruction(
                     Opcode.XOR, rd=Reg.T0.value, rs=Reg.T2.value, rt=Reg.T1.value
                 ),
@@ -384,7 +428,6 @@ class Translator:
         )
 
     def _generate_2dup_sub(self):
-        """2DUP ( a b -- a b a b ) дублирует два верхних элемента."""
         self.emit(
             [
                 Instruction(Opcode.POP, rt=Reg.T1.value),
@@ -398,13 +441,10 @@ class Translator:
         )
 
     def _generate_less_than_sub(self):
-        """
-        Генерирует подпрограмму для < (a < b).
-        """
         self.emit(
             [
-                Instruction(Opcode.POP, rt=Reg.T1.value),  # T1 <- b
-                Instruction(Opcode.POP, rt=Reg.T0.value),  # T0 <- a
+                Instruction(Opcode.POP, rt=Reg.T1.value),
+                Instruction(Opcode.POP, rt=Reg.T0.value),
                 Instruction(
                     Opcode.SUB, rd=Reg.T2.value, rs=Reg.T0.value, rt=Reg.T1.value
                 ),
@@ -418,11 +458,9 @@ class Translator:
         )
 
     def _generate_greater_than_sub(self):
-        """Генерирует подпрограмму для > (больше). a b -- (a > b)"""
         less_than_addr = self.symbols.get("<")
         if not isinstance(less_than_addr, int):
             raise RuntimeError("< subroutine not found for >")
-
         self.emit(
             [
                 Instruction(Opcode.POP, rt=Reg.T1.value),
@@ -435,15 +473,12 @@ class Translator:
         )
 
     def _generate_less_equal_sub(self):
-        """Генерирует подпрограмму для <=. Логика: NOT (a > b)."""
         greater_than_addr = self.symbols.get(">")
         if not isinstance(greater_than_addr, int):
             raise RuntimeError("> subroutine not found for <=")
-
         zero_equal_addr = self.symbols.get("0=")
         if not isinstance(zero_equal_addr, int):
             raise RuntimeError("0= subroutine not found for <=")
-
         self.emit(
             [
                 Instruction(Opcode.CALL, addr=greater_than_addr),
@@ -452,29 +487,13 @@ class Translator:
             ]
         )
 
-        self.emit(
-            [
-                Instruction(Opcode.CALL, addr=greater_than_addr),
-                Instruction(Opcode.POP, rt=Reg.T0.value),
-                self.emit_load_immediate(1, Reg.T1.value),
-                Instruction(
-                    Opcode.XOR, rd=Reg.T0.value, rs=Reg.T0.value, rt=Reg.T1.value
-                ),
-                Instruction(Opcode.PUSH, rs=Reg.T0.value),
-                Instruction(Opcode.RET),
-            ]
-        )
-
     def _generate_greater_equal_sub(self):
-        """Генерирует подпрограмму для >=. Логика: NOT (a < b)."""
         less_than_addr = self.symbols.get("<")
         if not isinstance(less_than_addr, int):
             raise RuntimeError("< subroutine not found for >=")
-
         zero_equal_addr = self.symbols.get("0=")
         if not isinstance(zero_equal_addr, int):
             raise RuntimeError("0= subroutine not found for >=")
-
         self.emit(
             [
                 Instruction(Opcode.CALL, addr=less_than_addr),
@@ -484,15 +503,14 @@ class Translator:
         )
 
     def _generate_zero_not_equal_sub(self):
-        """Генерирует подпрограмму для 0<> (не равно нулю)."""
         self.emit(
             [
                 Instruction(Opcode.POP, rt=Reg.T0.value),
-                self.emit_load_immediate(0, Reg.T1.value),
+                *self.emit_load_immediate(0, Reg.T1.value),
                 Instruction(
                     Opcode.CMP, rd=Reg.T2.value, rs=Reg.T0.value, rt=Reg.T1.value
                 ),
-                self.emit_load_immediate(1, Reg.T1.value),
+                *self.emit_load_immediate(1, Reg.T1.value),
                 Instruction(
                     Opcode.XOR, rd=Reg.T0.value, rs=Reg.T2.value, rt=Reg.T1.value
                 ),
@@ -511,11 +529,10 @@ class Translator:
         )
 
     def _generate_zero_equal_sub(self):
-        """Генерирует подпрограмму для 0= (проверка на ноль)."""
         self.emit(
             [
                 Instruction(Opcode.POP, rt=Reg.T0.value),
-                self.emit_load_immediate(0, Reg.T1.value),
+                *self.emit_load_immediate(0, Reg.T1.value),
                 Instruction(
                     Opcode.CMP, rd=Reg.T0.value, rs=Reg.T0.value, rt=Reg.T1.value
                 ),
@@ -566,7 +583,7 @@ class Translator:
             ]
         )
 
-    def _generate_fetch_sub(self):  # @
+    def _generate_fetch_sub(self):
         self.emit(
             [
                 Instruction(Opcode.POP, rt=Reg.T0.value),
@@ -576,7 +593,7 @@ class Translator:
             ]
         )
 
-    def _generate_store_sub(self):  # !
+    def _generate_store_sub(self):
         self.emit(
             [
                 Instruction(Opcode.POP, rt=Reg.T0.value),
@@ -590,37 +607,17 @@ class Translator:
         emit_addr = self.symbols.get("EMIT")
         if not isinstance(emit_addr, int):
             raise RuntimeError("EMIT subroutine not found when generating CR")
-
         self.emit(
             [
-                self.emit_push_instr(10),
+                *self.emit_push_instr(10),
                 Instruction(Opcode.CALL, addr=emit_addr),
                 Instruction(Opcode.RET),
             ]
         )
 
-    def start_word_definition(self, word: str):
-        self.symbols[word.upper()] = len(self.code)
-
-    def end_word_definition(self):
-        self.emit([Instruction(Opcode.RET)])
-
-    def _parse_string(self, token_stream: Iterator[str]) -> str:
-        buffer = []
-        for token in token_stream:
-            if token.endswith('"'):
-                if len(token) > 1:
-                    buffer.append(token[:-1])
-                return " ".join(buffer)
-            buffer.append(token)
-        raise SyntaxError("Unterminated string literal")
-
-    def _compile_string_literal(self, content: str):
-        """
-        Компилирует строковый литерал S" ... "
-        """
-        string_addr_load_instr_index = len(self.code)
-        self.string_relocations[string_addr_load_instr_index] = content
+    def _emit_variable_address_reference(self, var_name: str):
+        variable_addr_load_instr_index = len(self.code)
+        self.variable_relocations[variable_addr_load_instr_index] = var_name
         self.emit(
             [
                 Instruction(Opcode.LUI, rt=Reg.T0.value, imm=0),
@@ -628,13 +625,6 @@ class Translator:
                 Instruction(Opcode.PUSH, rs=Reg.T0.value),
             ]
         )
-
-    def _compile_char_literal(self, token_stream: Iterator[str]):
-        char_token = next(token_stream)
-        if not char_token:
-            raise SyntaxError("[CHAR] must be followed by a character token.")
-        char_code = ord(char_token[0])
-        self.emit(self.emit_push_instr(char_code))
 
     def _patch_string_addresses(self, base_byte_address_for_strings: int) -> list[int]:
         data_section_words_for_strings: list[int] = []
@@ -653,13 +643,11 @@ class Translator:
 
         for instr_idx, string_content in self.string_relocations.items():
             string_relative_offset_words = string_content_to_offset_map[string_content]
-
             final_string_address_word = (
                 string_data_start_word_addr + string_relative_offset_words
             )
             upper_bits = (final_string_address_word >> 16) & 0xFFFF
             lower_bits = final_string_address_word & 0xFFFF
-
             self.code[instr_idx].imm = upper_bits
             self.code[instr_idx + 1].imm = lower_bits
             logging.info(
@@ -668,205 +656,56 @@ class Translator:
             )
         return data_section_words_for_strings
 
-    def _tokenize(self, source: str) -> list[str]:
-        """Улучшенный токенизатор с поддержкой комментариев и сохранением регистра строк."""
-        lines = source.split("\n")
-        tokens = []
-
-        for line in lines:
-            comment_pos = line.find("\\")
-            if comment_pos != -1:
-                line = line[:comment_pos]
-
-            line = line.replace('s"', ' s" ').replace('S"', ' s" ')
-
-            line_tokens = line.strip().split()
-            processed_tokens = []
-            in_string = False
-
-            for token in line_tokens:
-                if token.lower() == 's"':
-                    processed_tokens.append('S"')
-                    in_string = True
-                elif in_string and token.endswith('"'):
-                    processed_tokens.append(token[:-1])
-                    processed_tokens.append('"')
-                    in_string = False
-                elif in_string:
-                    processed_tokens.append(token)
-                else:
-                    processed_tokens.append(token.upper())
-
-            tokens.extend(processed_tokens)
-
-        return [token for token in tokens if token]
-
-    def _process_token_in_colon_definition(
-        self, token: str, token_stream: Iterator[str]
-    ):
-        if token == 'S"':
-            content = self._parse_string(token_stream)
-            self._compile_string_literal(content)
-            return
-
-        try:
-            num = int(token)
-            self.emit(self.emit_push_instr(num))
-            return
-        except ValueError:
-            pass  # Не число, продолжаем
-
-        upper_token = token.upper()
-        if upper_token in self.symbols:
-            action_or_info = self.symbols[upper_token]
-
-            if isinstance(action_or_info, int):
-                self.emit([Instruction(Opcode.CALL, addr=action_or_info)])
-            elif callable(action_or_info):
-                action_or_info()
-            elif (
-                isinstance(action_or_info, tuple)
-                and action_or_info[0] == "data_variable"
-            ):
-                var_name_from_symbols = action_or_info[1]
-                variable_addr_load_instr_index = len(self.code)
-                self.variable_relocations[variable_addr_load_instr_index] = (
-                    var_name_from_symbols
+    def _patch_variable_addresses(self):
+        for instr_idx, var_name in self.variable_relocations.items():
+            if var_name not in self.data_variables:
+                raise RuntimeError(
+                    f"Internal error: Variable '{var_name}' in relocations but not in data_variables."
                 )
-                self.emit(
-                    [
-                        Instruction(Opcode.LUI, rt=Reg.T0.value, imm=0),
-                        Instruction(
-                            Opcode.ORI, rs=Reg.T0.value, rt=Reg.T0.value, imm=0
-                        ),
-                        Instruction(Opcode.PUSH, rs=Reg.T0.value),
-                    ]
-                )
-            elif isinstance(action_or_info, str) and action_or_info == "subroutine":
-                raise NotImplementedError(
-                    f"Built-in subroutine '{upper_token}' was not correctly pre-compiled with an address."
-                )
-            else:
-                raise ValueError(
-                    f"Unknown type of symbol '{upper_token}' in colon definition: {action_or_info}"
-                )
-        elif upper_token == "[CHAR]":
-            self._compile_char_literal(token_stream)
-            return
-        else:
-            raise ValueError(
-                f"Unknown word in colon definition: {token} (uppercase: {upper_token})"
+            variable_absolute_word_addr = self.data_variables[var_name]["offset_words"]
+            upper_bits = (variable_absolute_word_addr >> 16) & 0xFFFF
+            lower_bits = variable_absolute_word_addr & 0xFFFF
+            self.code[instr_idx].imm = upper_bits
+            self.code[instr_idx + 1].imm = lower_bits
+            logging.info(
+                f"Patched variable '{var_name}': LUI@idx={instr_idx} imm=0x{upper_bits:04X}, "
+                f"ORI@idx={instr_idx + 1} imm=0x{lower_bits:04X} -> final_word_addr=0x{variable_absolute_word_addr:08X}"
             )
 
-    def _process_executable_token(self, token: str, token_stream: Iterator[str]):
-        if token == 'S"':
-            content = self._parse_string(token_stream)
-            self._compile_string_literal(content)
+    def _process_symbol_action(self, upper_token: str, action_or_info: Any):
+        if isinstance(action_or_info, int):
+            self.emit([Instruction(Opcode.CALL, addr=action_or_info)])
             return
-
-        try:
-            num = int(token)
-            self.emit(self.emit_push_instr(num))
+        if callable(action_or_info):
+            action_or_info()
             return
-        except ValueError:
-            pass
-
-        upper_token = token.upper()
-        if upper_token in self.symbols:
-            action_or_info = self.symbols[upper_token]
-            if isinstance(action_or_info, int):
-                self.emit([Instruction(Opcode.CALL, addr=action_or_info)])
-            elif callable(action_or_info):
-                action_or_info()
-            elif (
-                isinstance(action_or_info, tuple)
-                and action_or_info[0] == "data_variable"
-            ):
-                var_name_from_symbols = action_or_info[1]
-                variable_addr_load_instr_index = len(self.code)
-                self.variable_relocations[variable_addr_load_instr_index] = (
-                    var_name_from_symbols
-                )
-                self.emit(
-                    [
-                        Instruction(Opcode.LUI, rt=Reg.T0.value, imm=0),
-                        Instruction(
-                            Opcode.ORI, rs=Reg.T0.value, rt=Reg.T0.value, imm=0
-                        ),
-                        Instruction(Opcode.PUSH, rs=Reg.T0.value),
-                    ]
-                )
-            elif isinstance(action_or_info, str) and action_or_info == "subroutine":
-                subroutine_addr = self.symbols.get(upper_token + "_ADDR")
-                if isinstance(subroutine_addr, int):
-                    self.emit([Instruction(Opcode.CALL, addr=subroutine_addr)])
-                else:
-                    raise NotImplementedError(
-                        f"Built-in subroutine '{upper_token}' was not correctly resolved to an address."
-                    )
-            else:
-                raise ValueError(
-                    f"Unknown type of symbol '{upper_token}': {action_or_info}"
-                )
-        elif upper_token == "[CHAR]":
-            self._compile_char_literal(token_stream)
+        if isinstance(action_or_info, tuple) and action_or_info[0] == "data_variable":
+            self._emit_variable_address_reference(action_or_info[1])
             return
-        else:
-            raise ValueError(f"Unknown word: {token} (uppercase: {upper_token})")
+        raise ValueError(f"Unknown symbol type for '{upper_token}': {action_or_info}")
 
     def _process_token(self, token: str, token_stream: Iterator[str]):
-        """Обрабатывает один токен, будь то число, слово, переменная и т.д."""
         upper_token = token.upper()
         if token == 'S"':
-            content = self._parse_string(token_stream)
-            self._compile_string_literal(content)
+            self._compile_string_literal(self._parse_string(token_stream))
             return
-
-        if token.upper() == "[CHAR]":
+        if token == "'":
+            self._compile_execution_token_literal(token_stream)
+            return
+        if upper_token == "[CHAR]":
             self._compile_char_literal(token_stream)
             return
-
         try:
-            num = int(token)
-            self.emit(self.emit_push_instr(num))
+            self.emit(self.emit_push_instr(int(token)))
             return
         except (ValueError, TypeError):
             pass
-
         if upper_token in self.symbols:
-            action_or_info = self.symbols[upper_token]
-
-            if isinstance(action_or_info, int):
-                self.emit([Instruction(Opcode.CALL, addr=action_or_info)])
-            elif callable(action_or_info):
-                action_or_info()
-            elif (
-                isinstance(action_or_info, tuple)
-                and action_or_info[0] == "data_variable"
-            ):
-                var_name_from_symbols = action_or_info[1]
-                variable_addr_load_instr_index = len(self.code)
-                self.variable_relocations[variable_addr_load_instr_index] = (
-                    var_name_from_symbols
-                )
-                self.emit(
-                    [
-                        Instruction(Opcode.LUI, rt=Reg.T0.value, imm=0),
-                        Instruction(
-                            Opcode.ORI, rs=Reg.T0.value, rt=Reg.T0.value, imm=0
-                        ),
-                        Instruction(Opcode.PUSH, rs=Reg.T0.value),
-                    ]
-                )
-            else:
-                raise ValueError(
-                    f"Unknown symbol type for '{upper_token}': {action_or_info}"
-                )
-        else:
-            raise ValueError(f"Unknown word: {token} (uppercase: {upper_token})")
+            self._process_symbol_action(upper_token, self.symbols[upper_token])
+            return
+        raise UnknownWordError(f"Unknown word: {token} (uppercase: {upper_token})")
 
     def _handle_word_definition(self, token_stream: Iterator[str]):
-        """Обрабатывает определения слов ': word ... ;'."""
         word_name = next(token_stream)
         self.start_word_definition(word_name)
         while True:
@@ -877,28 +716,29 @@ class Translator:
             self._process_token(body_token, token_stream)
 
     def _handle_variable_creation(self, token_stream: Iterator[str], token: str):
-        """Обрабатывает 'CREATE name ALLOT size' или 'VARIABLE name'."""
         upper_token = token.upper()
         var_name = next(token_stream).upper()
-
         if upper_token == "CREATE":
             allot_token = next(token_stream).upper()
             if allot_token != "ALLOT":
-                raise SyntaxError(
+                raise TranslatorSyntaxError(
                     f"Expected ALLOT after CREATE {var_name}, but got {allot_token}"
                 )
             size_token = next(token_stream)
             try:
                 size_in_words = int(size_token)
-                self.data_variables[var_name] = {
-                    "offset_words": self.current_data_section_offset_words,
-                    "size_words": size_in_words,
-                }
-                self.symbols[var_name] = ("data_variable", var_name)
-                self.current_data_section_offset_words += size_in_words
             except ValueError as e:
-                raise SyntaxError(f"Invalid size '{size_token}' for ALLOT") from e
-        elif upper_token == "VARIABLE":
+                raise TranslatorSyntaxError(
+                    f"Invalid size '{size_token}' for ALLOT"
+                ) from e
+            self.data_variables[var_name] = {
+                "offset_words": self.current_data_section_offset_words,
+                "size_words": size_in_words,
+            }
+            self.symbols[var_name] = ("data_variable", var_name)
+            self.current_data_section_offset_words += size_in_words
+            return
+        if upper_token == "VARIABLE":
             self.data_variables[var_name] = {
                 "offset_words": self.current_data_section_offset_words,
                 "size_words": 1,
@@ -923,20 +763,20 @@ class Translator:
             upper_token = token.upper()
             if upper_token == ":":
                 if main_code_started:
-                    raise SyntaxError("Definition ':' not allowed after main code.")
+                    raise TranslatorSyntaxError(
+                        "Definition ':' not allowed after main code."
+                    )
                 self._handle_word_definition(token_stream)
                 continue
 
             elif upper_token in {"CREATE", "VARIABLE"}:
                 if main_code_started:
-                    raise SyntaxError(
+                    raise TranslatorSyntaxError(
                         f"Definition '{upper_token}' not allowed after main code."
                     )
                 self._handle_variable_creation(token_stream, token)
                 continue
 
-            # Если мы дошли досюда, значит токен не является началом определения.
-            # Это - основной код.
             if not main_code_started:
                 main_code_started = True
                 main_code_start_addr = len(self.code)
@@ -944,7 +784,6 @@ class Translator:
 
             self._process_token(token, token_stream)
 
-        # Код после цикла, без изменений.
         if not main_code_started:
             main_code_start_addr = len(self.code)
             self.code[jmp_to_main_instruction_index].addr = main_code_start_addr
@@ -962,56 +801,18 @@ class Translator:
 
         return self.code, data_section_words
 
-    def _patch_variable_addresses(self):
-        for instr_idx, var_name in self.variable_relocations.items():
-            if var_name not in self.data_variables:
-                raise RuntimeError(
-                    f"Internal error: Variable '{var_name}' in relocations but not in data_variables."
-                )
-
-            var_info = self.data_variables[var_name]
-            variable_absolute_word_addr = var_info["offset_words"]
-
-            upper_bits = (variable_absolute_word_addr >> 16) & 0xFFFF
-            lower_bits = variable_absolute_word_addr & 0xFFFF
-            self.code[instr_idx].imm = upper_bits
-            self.code[instr_idx + 1].imm = lower_bits
-
-            logging.info(
-                f"Patched variable '{var_name}': LUI@idx={instr_idx} imm=0x{upper_bits:04X}, "
-                f"ORI@idx={instr_idx + 1} imm=0x{lower_bits:04X} -> final_word_addr=0x{variable_absolute_word_addr:08X}"
-            )
-
 
 def main(source_file: str, target_file: str):
-    """Главная функция."""
     with open(source_file, "r", encoding="utf-8") as f:
         source_code = f.read()
 
     translator = Translator()
     instructions, data_words = translator.translate(source_code)
-
-    with open(target_file, "wb") as f:
-        for instr in instructions:
-            f.write(instr.to_binary())
-        for word_val in data_words:
-            f.write(struct.pack(">I", word_val))  # упаковка каждого слова
-
-    data_section_size_bytes = len(data_words) * 4  # Размер секции данных в байтах
-    with open(target_file + ".txt", "w", encoding="utf-8", newline="") as f:
-        f.write(f"; Source: {source_file}\n")
-        f.write(f"; Code section (size: {len(instructions) * 4} bytes)\n")
-        for i, instr in enumerate(instructions):
-            f.write(instr.to_hex(i) + "\n")
-        f.write(f"\n; Data section (size: {data_section_size_bytes} bytes)\n")
-        f.write("; Data words (decimal):\n")
-        f.write(str(data_words) + "\n")
-        f.write("; Data words (hex):\n")
-        f.write("[" + ", ".join([f"0x{dw:08X}" for dw in data_words]) + "]\n")
+    write_binary_and_listing(source_file, target_file, instructions, data_words)
 
     print(f"Successfully translated {source_file} to {target_file}")
     print(
-        f"Total instructions: {len(instructions)}, Data size: {data_section_size_bytes} bytes"
+        f"Total instructions: {len(instructions)}, Data size: {len(data_words) * 4} bytes"
     )
 
 
