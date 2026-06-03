@@ -6,9 +6,6 @@ from isa import Opcode
 
 
 class MicroOp(Enum):
-    """Микрооперации, выполняемые за один такт."""
-
-    # --- Управление потоком команд (PC) и выборка инструкций (Fetch) ---
     LATCH_PC_INC = auto()
     LATCH_PC_ADDR = auto()
     LATCH_PC_ALU = auto()
@@ -17,8 +14,6 @@ class MicroOp(Enum):
     LATCH_IR = auto()
     INSTR_READ = auto()
 
-    # --- Декодирование и работа с регистрами ---
-    # `DECODE` не является явной микрокомандой, а действием CU после LATCH_IR.
     LATCH_A_RS = auto()
     LATCH_A_RT = auto()
     LATCH_A_MDR = auto()
@@ -34,7 +29,6 @@ class MicroOp(Enum):
     LATCH_RT_MDR = auto()
     LATCH_SP_ALU = auto()
 
-    # --- Операции АЛУ ---
     ALU_ADD = auto()
     ALU_SUB = auto()
     ALU_MUL = auto()
@@ -48,7 +42,6 @@ class MicroOp(Enum):
     ALU_SHR = auto()
     ALU_LUI = auto()
 
-    # --- Операции с памятью и кешем ---
     LATCH_MAR_ALU = auto()
     LATCH_MDR_RT = auto()
     LATCH_MDR_A = auto()
@@ -58,7 +51,6 @@ class MicroOp(Enum):
     PORT_READ = auto()
     PORT_WRITE = auto()
 
-    # --- Управление потоком микрокода ---
     BRANCH_IF_ZERO = auto()
     BRANCH_IF_NOT_ZERO = auto()
     FINISH_INSTRUCTION = auto()
@@ -66,11 +58,6 @@ class MicroOp(Enum):
 
 
 def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
-    """
-    Фабричная функция, создающая и возвращающая "ROM" с микрокодом.
-    Ключ словаря - Opcode машинной инструкции, значение - список микро-операций.
-    """
-    # Общая последовательность для выборки любой инструкции (Fetch Cycle)
     fetch_cycle = [
         MicroOp.LATCH_MAR_PC,
         MicroOp.INSTR_READ,
@@ -79,10 +66,9 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
     ]
 
     microcode = {
-        # --- Системные инструкции ---
         Opcode.NOP: [MicroOp.FINISH_INSTRUCTION],
         Opcode.HALT: [MicroOp.HALT_PROCESSOR],
-        # --- R-type инструкции ---
+
         Opcode.ADD: [
             MicroOp.LATCH_A_RS,
             MicroOp.LATCH_B_RT,
@@ -160,7 +146,7 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
             MicroOp.LATCH_RD_ALU,
             MicroOp.FINISH_INSTRUCTION,
         ],
-        # --- I-type инструкции ---
+
         Opcode.ADDI: [
             MicroOp.LATCH_A_RS,
             MicroOp.LATCH_B_IMM,
@@ -219,8 +205,29 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
             MicroOp.BRANCH_IF_NOT_ZERO,
             MicroOp.FINISH_INSTRUCTION,
         ],
-        # --- Стек ---
-        # PUSH rs: SP <- SP - 1; mem[SP] <- GPR[rs]
+        Opcode.JMPR: [
+            MicroOp.LATCH_A_RS,
+            MicroOp.LATCH_B_IMM,
+            MicroOp.ALU_ADD,
+            MicroOp.LATCH_PC_ALU,
+            MicroOp.FINISH_INSTRUCTION,
+        ],
+        Opcode.CALLR: [
+            MicroOp.LATCH_A_SP,
+            MicroOp.LATCH_B_CONST_1,
+            MicroOp.ALU_SUB,
+            MicroOp.LATCH_SP_ALU,
+            MicroOp.LATCH_MAR_ALU,
+            MicroOp.LATCH_A_PC,
+            MicroOp.LATCH_MDR_A,
+            MicroOp.CACHE_WRITE,
+            MicroOp.LATCH_A_RS,
+            MicroOp.LATCH_B_IMM,
+            MicroOp.ALU_ADD,
+            MicroOp.LATCH_PC_ALU,
+            MicroOp.FINISH_INSTRUCTION,
+        ],
+
         Opcode.PUSH: [
             MicroOp.LATCH_A_SP,
             MicroOp.LATCH_B_CONST_1,
@@ -232,7 +239,6 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
             MicroOp.CACHE_WRITE,
             MicroOp.FINISH_INSTRUCTION,
         ],
-        # POP rt: rt <- mem[SP]; SP <- SP + 1
         Opcode.POP: [
             MicroOp.LATCH_A_SP,
             MicroOp.LATCH_MAR_ALU,
@@ -244,7 +250,7 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
             MicroOp.LATCH_RT_MDR,
             MicroOp.FINISH_INSTRUCTION,
         ],
-        # --- J-type и процедуры ---
+
         Opcode.JMP: [MicroOp.LATCH_PC_ADDR, MicroOp.FINISH_INSTRUCTION],
         Opcode.CALL: [
             MicroOp.LATCH_A_SP,
