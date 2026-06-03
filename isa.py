@@ -89,7 +89,6 @@ class Instruction:
         Opcode.CALLR,
     }
 
-
     def __init__(
         self,
         opcode: Opcode,
@@ -118,10 +117,7 @@ class Instruction:
         elif self.opcode in self._I_TYPE_OPCODES:
             rs = 0 if self.opcode == Opcode.LUI else self.rs
             word = (
-                (opcode_val << 26)
-                | (rs << 21)
-                | (self.rt << 16)
-                | (self.imm & 0xFFFF)
+                (opcode_val << 26) | (rs << 21) | (self.rt << 16) | (self.imm & 0xFFFF)
             )
 
         elif self.opcode in [Opcode.JMP, Opcode.CALL]:

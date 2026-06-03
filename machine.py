@@ -21,6 +21,7 @@ class DecodedInstruction(TypedDict):
     imm: int
     addr: int
 
+
 class CacheLine:
     def __init__(self) -> None:
         self.valid = False
@@ -276,7 +277,9 @@ class ControlUnit:
         else:
             self.micro_pc = next_micro_pc
 
-    def _handle_pc_operations(self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"):
+    def _handle_pc_operations(
+        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+    ):
         if op == MicroOp.LATCH_PC_INC:
             dp.pc += 1
         elif op == MicroOp.LATCH_PC_ADDR:

@@ -68,7 +68,6 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
     microcode = {
         Opcode.NOP: [MicroOp.FINISH_INSTRUCTION],
         Opcode.HALT: [MicroOp.HALT_PROCESSOR],
-
         Opcode.ADD: [
             MicroOp.LATCH_A_RS,
             MicroOp.LATCH_B_RT,
@@ -146,7 +145,6 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
             MicroOp.LATCH_RD_ALU,
             MicroOp.FINISH_INSTRUCTION,
         ],
-
         Opcode.ADDI: [
             MicroOp.LATCH_A_RS,
             MicroOp.LATCH_B_IMM,
@@ -227,7 +225,6 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
             MicroOp.LATCH_PC_ALU,
             MicroOp.FINISH_INSTRUCTION,
         ],
-
         Opcode.PUSH: [
             MicroOp.LATCH_A_SP,
             MicroOp.LATCH_B_CONST_1,
@@ -250,7 +247,6 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
             MicroOp.LATCH_RT_MDR,
             MicroOp.FINISH_INSTRUCTION,
         ],
-
         Opcode.JMP: [MicroOp.LATCH_PC_ADDR, MicroOp.FINISH_INSTRUCTION],
         Opcode.CALL: [
             MicroOp.LATCH_A_SP,
