@@ -788,7 +788,8 @@ class Translator:
             main_code_start_addr = len(self.code)
             self.code[jmp_to_main_instruction_index].addr = main_code_start_addr
 
-        self.emit([Instruction(Opcode.HALT)])
+        if not self.code or self.code[-1].opcode != Opcode.HALT:
+            self.emit([Instruction(Opcode.HALT)])
 
         self._patch_variable_addresses()
         base_byte_address_for_strings = self.current_data_section_offset_words * 4

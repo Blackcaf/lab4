@@ -1,204 +1,293 @@
-in_source: |-
-  BEGIN
-      KEY
-      DUP 0 <>
-  WHILE
-      EMIT
-  REPEAT
-  HALT
-in_stdin: |
-  Hello
+in_source_file: examples/cat/cat.f
+in_stdin: 'Hello
+
   World
+
+  '
 in_limit: 500000
 in_cache_size: 256
 out_code_preview: yAAAgsQDAACgAwAB0AAAAJwDAADAYAAA0AAAAMQDAADAYAAAwGAAANAAAADEAwAAxAQAAMBgAADAgAAA0AAAAMQFAADEBAAA...
-out_code_sha256: c5a1b9daa8f2bf71afd5cb27260ca130753a3f8cf3734464194a942c4291228e
-out_code_size: 564
-out_code: yAAAgsQDAACgAwAB0AAAAJwDAADAYAAA0AAAAMQDAADAYAAAwGAAANAAAADEAwAAxAQAAMBgAADAgAAA0AAAAMQFAADEBAAAxAMAAMCAAADAoAAAwGAAANAAAADEAwAA0AAAAMQEAADEAwAAYGQYAMBgAADQAAAAxAMAAIBjAAHAYAAA0AAAAMQDAADEBAAAwIAAAMBgAADAgAAA0AAAAMQEAADEAwAAwGAAAMCAAADAYAAAwIAAANAAAADEAwAAhGMAAMBgAADQAAAAxAQAAMQDAABQZCgATGQ4AMDgAADAoAAA0AAAAMQDAACAYwACwGAAANAAAADEAwAAgGP//8BgAADQAAAAxAMAAMQEAADQAAAAxAMAAMQEAACIZAAA0AAAAMQDAACABAAAYGQYAMBgAADQAAAAxAQAAMQDAABgZCgAgAQAAVykGADAYAAA0AAAAMQEAADEAwAARGQoAIADAB9ooygAwKAAANAAAADEBAAAxAMAAMCAAADAYAAAzAAAVdAAAADMAABczAAASdAAAADMAABVzAAASdAAAADEAwAAgAQAAGBkKACABAABXKQYAMBgAADQAAAAgAMACsBgAADMAAAB0AAAAMQDAACEZAAAgGMAAYwEAArAYAAAwIAAAIRlAADAoAAAzAAAAcQEAADEAwAAgGMAAYCE///IAAB20AAAAMwAAATMAAAHgAMAAMBgAADMAABOxAMAAIwDAALMAAAByAAAggQAAAAEAAAA
-out_code_hex: |
-  ; Source: <source_path>
-  ; Code section (size: 564 bytes)
+out_code_sha256: 2284e70381e9c444c2638f4c8c98bfb7bbf5edd37b39174952767c756156e60d
+out_code_size: 560
+out_code: yAAAgsQDAACgAwAB0AAAAJwDAADAYAAA0AAAAMQDAADAYAAAwGAAANAAAADEAwAAxAQAAMBgAADAgAAA0AAAAMQFAADEBAAAxAMAAMCAAADAoAAAwGAAANAAAADEAwAA0AAAAMQEAADEAwAAYGQYAMBgAADQAAAAxAMAAIBjAAHAYAAA0AAAAMQDAADEBAAAwIAAAMBgAADAgAAA0AAAAMQEAADEAwAAwGAAAMCAAADAYAAAwIAAANAAAADEAwAAhGMAAMBgAADQAAAAxAQAAMQDAABQZCgATGQ4AMDgAADAoAAA0AAAAMQDAACAYwACwGAAANAAAADEAwAAgGP//8BgAADQAAAAxAMAAMQEAADQAAAAxAMAAMQEAACIZAAA0AAAAMQDAACABAAAYGQYAMBgAADQAAAAxAQAAMQDAABgZCgAgAQAAVykGADAYAAA0AAAAMQEAADEAwAARGQoAIADAB9ooygAwKAAANAAAADEBAAAxAMAAMCAAADAYAAAzAAAVdAAAADMAABczAAASdAAAADMAABVzAAASdAAAADEAwAAgAQAAGBkKACABAABXKQYAMBgAADQAAAAgAMACsBgAADMAAAB0AAAAMQDAACEZAAAgGMAAYwEAArAYAAAwIAAAIRlAADAoAAAzAAAAcQEAADEAwAAgGMAAYCE///IAAB20AAAAMwAAATMAAAHgAMAAMBgAADMAABOxAMAAIwDAALMAAAByAAAggQAAAA=
+out_code_hex: '; Source: <source_path>
+
+  ; Code section (size: 560 bytes)
+
   0x0000: C8000082  JMP   0x0000082
+
   0x0001: C4030000  POP   R3
+
   0x0002: A0030001  OUT   port 1, R3
+
   0x0003: D0000000  RET
+
   0x0004: 9C030000  IN    R3, port 0
+
   0x0005: C0600000  PUSH  R3
+
   0x0006: D0000000  RET
+
   0x0007: C4030000  POP   R3
+
   0x0008: C0600000  PUSH  R3
+
   0x0009: C0600000  PUSH  R3
+
   0x000A: D0000000  RET
+
   0x000B: C4030000  POP   R3
+
   0x000C: C4040000  POP   R4
+
   0x000D: C0600000  PUSH  R3
+
   0x000E: C0800000  PUSH  R4
+
   0x000F: D0000000  RET
+
   0x0010: C4050000  POP   R5
+
   0x0011: C4040000  POP   R4
+
   0x0012: C4030000  POP   R3
+
   0x0013: C0800000  PUSH  R4
+
   0x0014: C0A00000  PUSH  R5
+
   0x0015: C0600000  PUSH  R3
+
   0x0016: D0000000  RET
+
   0x0017: C4030000  POP   R3
+
   0x0018: D0000000  RET
+
   0x0019: C4040000  POP   R4
+
   0x001A: C4030000  POP   R3
+
   0x001B: 60641800  CMP   R3, R3, R4
+
   0x001C: C0600000  PUSH  R3
+
   0x001D: D0000000  RET
+
   0x001E: C4030000  POP   R3
+
   0x001F: 80630001  ADDI  R3, R3, 1
+
   0x0020: C0600000  PUSH  R3
+
   0x0021: D0000000  RET
+
   0x0022: C4030000  POP   R3
+
   0x0023: C4040000  POP   R4
+
   0x0024: C0800000  PUSH  R4
+
   0x0025: C0600000  PUSH  R3
+
   0x0026: C0800000  PUSH  R4
+
   0x0027: D0000000  RET
+
   0x0028: C4040000  POP   R4
+
   0x0029: C4030000  POP   R3
+
   0x002A: C0600000  PUSH  R3
+
   0x002B: C0800000  PUSH  R4
+
   0x002C: C0600000  PUSH  R3
+
   0x002D: C0800000  PUSH  R4
+
   0x002E: D0000000  RET
+
   0x002F: C4030000  POP   R3
+
   0x0030: 84630000  LOAD  R3, 0(R3)
+
   0x0031: C0600000  PUSH  R3
+
   0x0032: D0000000  RET
+
   0x0033: C4040000  POP   R4
+
   0x0034: C4030000  POP   R3
+
   0x0035: 50642800  MOD   R5, R3, R4
+
   0x0036: 4C643800  DIV   R7, R3, R4
+
   0x0037: C0E00000  PUSH  R7
+
   0x0038: C0A00000  PUSH  R5
+
   0x0039: D0000000  RET
+
   0x003A: C4030000  POP   R3
+
   0x003B: 80630002  ADDI  R3, R3, 2
+
   0x003C: C0600000  PUSH  R3
+
   0x003D: D0000000  RET
+
   0x003E: C4030000  POP   R3
+
   0x003F: 8063FFFF  ADDI  R3, R3, -1
+
   0x0040: C0600000  PUSH  R3
+
   0x0041: D0000000  RET
+
   0x0042: C4030000  POP   R3
+
   0x0043: C4040000  POP   R4
+
   0x0044: D0000000  RET
+
   0x0045: C4030000  POP   R3
+
   0x0046: C4040000  POP   R4
+
   0x0047: 88640000  STORE R4, 0(R3)
+
   0x0048: D0000000  RET
+
   0x0049: C4030000  POP   R3
+
   0x004A: 80040000  ADDI  R4, R0, 0
+
   0x004B: 60641800  CMP   R3, R3, R4
+
   0x004C: C0600000  PUSH  R3
+
   0x004D: D0000000  RET
+
   ... listing truncated ...
+
+  0x006A: 60642800  CMP   R5, R3, R4
+
   0x006B: 80040001  ADDI  R4, R0, 1
+
   0x006C: 5CA41800  XOR   R3, R5, R4
+
   0x006D: C0600000  PUSH  R3
+
   0x006E: D0000000  RET
+
   0x006F: 8003000A  ADDI  R3, R0, 10
+
   0x0070: C0600000  PUSH  R3
+
   0x0071: CC000001  CALL  0x0000001
+
   0x0072: D0000000  RET
+
   0x0073: C4030000  POP   R3
+
   0x0074: 84640000  LOAD  R4, 0(R3)
+
   0x0075: 80630001  ADDI  R3, R3, 1
+
   0x0076: 8C04000A  JZ    R4, 10
+
   0x0077: C0600000  PUSH  R3
+
   0x0078: C0800000  PUSH  R4
+
   0x0079: 84650000  LOAD  R5, 0(R3)
+
   0x007A: C0A00000  PUSH  R5
+
   0x007B: CC000001  CALL  0x0000001
+
   0x007C: C4040000  POP   R4
+
   0x007D: C4030000  POP   R3
+
   0x007E: 80630001  ADDI  R3, R3, 1
+
   0x007F: 8084FFFF  ADDI  R4, R4, -1
+
   0x0080: C8000076  JMP   0x0000076
+
   0x0081: D0000000  RET
+
   0x0082: CC000004  CALL  0x0000004
+
   0x0083: CC000007  CALL  0x0000007
+
   0x0084: 80030000  ADDI  R3, R0, 0
+
   0x0085: C0600000  PUSH  R3
+
   0x0086: CC00004E  CALL  0x000004E
+
   0x0087: C4030000  POP   R3
+
   0x0088: 8C030002  JZ    R3, 2
+
   0x0089: CC000001  CALL  0x0000001
+
   0x008A: C8000082  JMP   0x0000082
+
   0x008B: 04000000  HALT
-  0x008C: 04000000  HALT
+
 
   ; Data section (size: 0 bytes)
-  ; Data words (decimal):
-  []
-  ; Data words (hex):
-  []
-out_stdout: |
-  Successfully translated <source_path> to <target_path>
-  Total instructions: 141, Data size: 0 bytes
-  ============================================================
-  Code size: 140 words. Data size: 1 words (Harvard: separate instruction/data memories).
 
-  Simulation output: 'Hello
-  World
+  ; Data words (decimal):
+
+  []
+
+  ; Data words (hex):
+
+  []
+
   '
+out_stdout: 'Successfully translated <source_path> to <target_path>
+
+  Total instructions: 140, Data size: 0 bytes
+
+  ============================================================
+
+  Code size: 140 words. Data size: 0 words (Harvard: separate instruction/data memories).
+
+
+  Simulation output: ''Hello
+
+  World
+
+  ''
+
   Total ticks: 5896
-out_log: |-
-  INFO     Starting simulation...
-  INFO     TICK:    0 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 0 | Zero: False
-  DEBUG    TICK 1: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:    1 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 1 | Zero: False
-  DEBUG    TICK 2: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x0000. Accessing memory.
-  INFO     TICK:    2 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 8 cycles remaining.
-  INFO     TICK:    3 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 7 cycles remaining.
-  INFO     TICK:    4 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 6 cycles remaining.
-  INFO     TICK:    5 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 5 cycles remaining.
-  INFO     TICK:    6 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 4 cycles remaining.
-  INFO     TICK:    7 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 3 cycles remaining.
-  INFO     TICK:    8 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 2 cycles remaining.
-  INFO     TICK:    9 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 1 cycles remaining.
-  INFO     TICK:   10 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 0 cycles remaining.
-  INFO     TICK:   11 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  DEBUG    TICK 12: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:   12 | PC: 0x0001 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 3 | Zero: False
-  DEBUG    TICK 13: Executing micro-op: LATCH_IR
-  INFO     TICK:   13 | PC: 0x0001 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 4 | Zero: False
-  DEBUG    TICK 14: Executing micro-op: LATCH_PC_ADDR
-  INFO     JMP/CALL: Setting PC to 0x0082
-  INFO     TICK:   14 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 5 | Zero: False
-  DEBUG    TICK 15: Executing micro-op: FINISH_INSTRUCTION
-  INFO     TICK:   15 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 0 | Zero: False
-  DEBUG    TICK 16: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:   16 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 1 | Zero: False
-  DEBUG    TICK 17: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x0082. Accessing memory.
-  INFO     TICK:   17 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 8 cycles remaining.
-  INFO     TICK:   18 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 7 cycles remaining.
-  INFO     TICK:   19 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 6 cycles remaining.
-  INFO     TICK:   20 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 5 cycles remaining.
-  INFO     TICK:   21 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 4 cycles remaining.
-  INFO     TICK:   22 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 3 cycles remaining.
-  INFO     TICK:   23 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 2 cycles remaining.
-  INFO     TICK:   24 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 
-  ... (log truncated)
+
+  '
+out_log: "INFO     Starting simulation...\nINFO     TICK:    0 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 0 | Zero: False\nDEBUG    TICK 1: Executing micro-op: LATCH_MAR_PC\n\
+  INFO     TICK:    1 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 1 | Zero: False\nDEBUG    TICK 2: Executing micro-op: INSTR_READ\nWARNING  I-CACHE: MISS on read at addr 0x0000.\
+  \ Accessing memory.\nINFO     TICK:    2 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 8 cycles remaining.\nINFO     TICK:    3 | PC: 0x0000\
+  \ | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 7 cycles remaining.\nINFO     TICK:    4 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC:\
+  \ 2 | Zero: False\nINFO     STALL: 6 cycles remaining.\nINFO     TICK:    5 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 5 cycles remaining.\n\
+  INFO     TICK:    6 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 4 cycles remaining.\nINFO     TICK:    7 | PC: 0x0000 | IR: 0x00000000 (NOP)\
+  \ | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 3 cycles remaining.\nINFO     TICK:    8 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\n\
+  INFO     STALL: 2 cycles remaining.\nINFO     TICK:    9 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 1 cycles remaining.\nINFO     TICK:  \
+  \ 10 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 0 cycles remaining.\nINFO     TICK:   11 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 64536 |\
+  \ DSP: 60536 | MicroPC: 2 | Zero: False\nDEBUG    TICK 12: Executing micro-op: LATCH_PC_INC\nINFO     TICK:   12 | PC: 0x0001 | IR: 0x00000000 (NOP) | SP: 64536 | DSP: 60536 | MicroPC: 3 | Zero: False\n\
+  DEBUG    TICK 13: Executing micro-op: LATCH_IR\nINFO     TICK:   13 | PC: 0x0001 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 4 | Zero: False\nDEBUG    TICK 14: Executing micro-op:\
+  \ LATCH_PC_ADDR\nINFO     JMP/CALL: Setting PC to 0x0082\nINFO     TICK:   14 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 5 | Zero: False\nDEBUG    TICK 15: Executing\
+  \ micro-op: FINISH_INSTRUCTION\nINFO     TICK:   15 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 0 | Zero: False\nDEBUG    TICK 16: Executing micro-op: LATCH_MAR_PC\n\
+  INFO     TICK:   16 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 1 | Zero: False\nDEBUG    TICK 17: Executing micro-op: INSTR_READ\nWARNING  I-CACHE: MISS on read\
+  \ at addr 0x0082. Accessing memory.\nINFO     TICK:   17 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 8 cycles remaining.\nINFO\
+  \     TICK:   18 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 7 cycles remaining.\nINFO     TICK:   19 | PC: 0x0082 | IR: 0xC8000082\
+  \ (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 6 cycles remaining.\nINFO     TICK:   20 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536\
+  \ | MicroPC: 2 | Zero: False\nINFO     STALL: 5 cycles remaining.\nINFO     TICK:   21 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL:\
+  \ 4 cycles remaining.\nINFO     TICK:   22 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 3 cycles remaining.\nINFO     TICK:   23\
+  \ | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082) | SP: 64536 | DSP: 60536 | MicroPC: 2 | Zero: False\nINFO     STALL: 2 cycles remaining.\nINFO     TICK:   24 | PC: 0x0082 | IR: 0xC8000082 (JMP   0x0000082)\
+  \ | SP: 64536 | DSP: 60536 \n... (log truncated)"

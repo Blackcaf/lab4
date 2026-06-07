@@ -108,8 +108,13 @@ def test_translator_and_machine(golden, caplog):
         input_path = str(tmp_path / "input.txt")
         target_path = str(tmp_path / "target.bin")
 
+        if "in_source_file" in golden._inputs:
+            with open(golden["in_source_file"], "r", encoding="utf-8") as f:
+                source_code = f.read()
+        else:
+            source_code = golden["in_source"]
         with open(source_path, "w", encoding="utf-8") as f:
-            f.write(golden["in_source"])
+            f.write(source_code)
         with open(input_path, "w", encoding="utf-8") as f:
             f.write(golden["in_stdin"])
 
