@@ -48,9 +48,10 @@ class Cache:
         self.name = name
 
     def _get_line_and_tag(self, addr: int) -> tuple[int, int]:
-        index_bits = (self.size - 1).bit_length() - 1
-        line_index = addr & ((1 << index_bits) - 1)
-        tag = addr >> index_bits
+        word_addr = addr >> 2
+        index_bits = self.size.bit_length() - 1
+        line_index = word_addr & ((1 << index_bits) - 1)
+        tag = word_addr >> index_bits
         return line_index, tag
 
     def read(self, addr: int) -> tuple[int, int]:
@@ -93,17 +94,31 @@ class Cache:
 
 
 class Memory:
+    """Однопортовая память: в каждом тике допустима только одна операция (read ИЛИ write)."""
+
     def __init__(self, size: int) -> None:
         self.size = size
-        self.memory = [0] * size
+        self.memory = [0] * (size // 4)
+        self._port_used = False
+
+    def tick(self):
+        self._port_used = False
 
     def write(self, addr: int, value: int):
         assert 0 <= addr < self.size, f"Invalid memory address: {addr}"
-        self.memory[addr] = value
+        assert addr % 4 == 0, f"Unaligned write at address: {addr}"
+        assert (
+            not self._port_used
+        ), f"One-port memory: port busy (write at 0x{addr:04X})"
+        self._port_used = True
+        self.memory[addr >> 2] = value
 
     def read(self, addr: int) -> int:
         assert 0 <= addr < self.size, f"Invalid memory address: {addr}"
-        return self.memory[addr]
+        assert addr % 4 == 0, f"Unaligned read at address: {addr}"
+        assert not self._port_used, f"One-port memory: port busy (read at 0x{addr:04X})"
+        self._port_used = True
+        return self.memory[addr >> 2]
 
 
 class PortController:
@@ -139,8 +154,8 @@ class DataPath:
         self.ports = PortController(input_buffer)
 
         self.gpr = [0] * 8
-        self.gpr[Reg.SP.value] = memory_size - 1000
-        self.data_sp = memory_size - 5000
+        self.gpr[Reg.SP.value] = memory_size - 4000
+        self.data_sp = memory_size - 20000
         self.pc = 0
         self.mar = 0
         self.mdr = 0
@@ -281,7 +296,7 @@ class ControlUnit:
         self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
     ):
         if op == MicroOp.LATCH_PC_INC:
-            dp.pc += 1
+            dp.pc += 4
         elif op == MicroOp.LATCH_PC_ADDR:
             logging.info(f"JMP/CALL: Setting PC to 0x{ir['addr']:04X}")
             dp.pc = ir["addr"]
@@ -338,7 +353,7 @@ class ControlUnit:
         elif op == MicroOp.LATCH_B_IMM:
             return ir["imm"]
         elif op == MicroOp.LATCH_B_CONST_1:
-            return 1
+            return 4
         raise ValueError(f"Unknown LATCH_B operation: {op}")
 
     def _handle_alu_input_latching(
@@ -462,6 +477,9 @@ class ControlUnit:
 
 def _run_simulation_loop(control_unit: "ControlUnit", datapath: "DataPath", limit: int):
     while not control_unit.halted and control_unit.tick_counter < limit:
+        datapath.instruction_memory.tick()
+        datapath.data_memory.tick()
+
         try:
             decoded = control_unit.current_decoded_ir
             mnemonic = Instruction(
@@ -504,17 +522,21 @@ def simulation(binary_code: bytes, input_str: str, limit: int, cache_size: int):
     datapath = DataPath(MEMORY_SIZE, cache_size, list(input_str))
 
     for i, word in enumerate(code_words):
-        datapath.instruction_memory.memory[i] = word
+        datapath.instruction_memory.tick()
+        datapath.instruction_memory.write(i * 4, word)
     for i, word in enumerate(data_words):
-        if i < datapath.data_memory.size:
-            datapath.data_memory.memory[i] = word
+        byte_addr = i * 4
+        if byte_addr < datapath.data_memory.size:
+            datapath.data_memory.tick()
+            datapath.data_memory.write(byte_addr, word)
         else:
             logging.warning("Data section overflows memory. Truncating.")
             break
 
     print(
         "Code size: "
-        f"{len(code_words)} words. Data size: {len(data_words)} words "
+        f"{len(code_words)} words ({len(code_words) * 4} bytes). "
+        f"Data size: {len(data_words)} words ({len(data_words) * 4} bytes) "
         "(Harvard: separate instruction/data memories)."
     )
 

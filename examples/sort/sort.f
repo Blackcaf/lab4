@@ -38,7 +38,7 @@ VARIABLE PARSE_ACCUM
     BEGIN
         I_VAR @ NUMBERS @ <
     WHILE
-        NUMBERS I_VAR @ 1+ +
+        NUMBERS I_VAR @ 4 * 4 + + 
         PARSE-INT SWAP !
         I_VAR @ 1+ I_VAR !
     REPEAT
@@ -49,7 +49,7 @@ VARIABLE PARSE_ACCUM
     BEGIN
         I_VAR @ NUMBERS @ <
     WHILE
-        NUMBERS I_VAR @ 1+ + @ PRINT-NUMBER
+        NUMBERS I_VAR @ 4 * 4 + + @ PRINT-NUMBER
         I_VAR @ 1+ I_VAR !
     REPEAT
     CR
@@ -64,12 +64,12 @@ VARIABLE PARSE_ACCUM
         BEGIN
             J_VAR @ NUMBERS @ I_VAR @ - 1- <
         WHILE
-            NUMBERS J_VAR @ 1+ + @  V_J !
-            NUMBERS J_VAR @ 2+ + @  V_J1 !
+            NUMBERS J_VAR @ 4 * 4 + + @  V_J !
+            NUMBERS J_VAR @ 4 * 4 + + 4 + @  V_J1 !
 
             V_J @ V_J1 @ > IF
-                V_J1 @  NUMBERS J_VAR @ 1+ + !
-                V_J @   NUMBERS J_VAR @ 2+ + !
+                V_J1 @  NUMBERS J_VAR @ 4 * 4 + + !
+                V_J @   NUMBERS J_VAR @ 4 * 4 + + 4 + !
             THEN
             J_VAR @ 1+ J_VAR !
         REPEAT

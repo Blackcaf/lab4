@@ -143,7 +143,7 @@ class Translator:
         )
 
     def start_word_definition(self, word: str):
-        self.symbols[word.upper()] = len(self.code)
+        self.symbols[word.upper()] = len(self.code) * 4
 
     def end_word_definition(self):
         self.emit([Instruction(Opcode.RET)])
@@ -198,7 +198,7 @@ class Translator:
         jmp_instr = Instruction(Opcode.JMP, addr=0)
         self.emit([jmp_instr])
         else_addr = len(self.code)
-        self.code[if_info["addr"]].imm = else_addr - (if_info["addr"] + 1)
+        self.code[if_info["addr"]].imm = (else_addr - (if_info["addr"] + 1)) * 4
         self.control_flow_stack.append({"type": "ELSE", "addr": len(self.code) - 1})
 
     def emit_then(self):
@@ -208,9 +208,9 @@ class Translator:
         exit_addr = len(self.code)
         jump_instr = self.code[last_info["addr"]]
         if jump_instr.opcode == Opcode.JMP:
-            jump_instr.addr = exit_addr
+            jump_instr.addr = exit_addr * 4
         else:
-            jump_instr.imm = exit_addr - (last_info["addr"] + 1)
+            jump_instr.imm = (exit_addr - (last_info["addr"] + 1)) * 4
 
     def emit_begin(self):
         self.control_flow_stack.append({"type": "BEGIN", "addr": len(self.code)})
@@ -229,9 +229,9 @@ class Translator:
     def emit_repeat(self):
         while_info = self._pop_control_flow(("WHILE",), "REPEAT without matching WHILE")
         begin_info = self._pop_control_flow(("BEGIN",), "REPEAT without matching BEGIN")
-        self.emit([Instruction(Opcode.JMP, addr=begin_info["addr"])])
+        self.emit([Instruction(Opcode.JMP, addr=begin_info["addr"] * 4)])
         exit_addr = len(self.code)
-        self.code[while_info["addr"]].imm = exit_addr - (while_info["addr"] + 1)
+        self.code[while_info["addr"]].imm = (exit_addr - (while_info["addr"] + 1)) * 4
 
     def emit_until(self):
         begin_info = self._pop_control_flow(("BEGIN",), "UNTIL without matching BEGIN")
@@ -241,7 +241,7 @@ class Translator:
                 Instruction(
                     Opcode.JZ,
                     rt=Reg.T0.value,
-                    imm=begin_info["addr"] - (len(self.code) + 1),
+                    imm=(begin_info["addr"] - (len(self.code) + 1)) * 4,
                 ),
             ]
         )
@@ -275,7 +275,7 @@ class Translator:
 
         for name, generator in simple_subroutines:
             if self.symbols.get(name) == "subroutine":
-                self.symbols[name] = len(self.code)
+                self.symbols[name] = len(self.code) * 4
                 generator()
         if self.symbols.get("NOT") == "subroutine":
             self.symbols["NOT"] = self.symbols["0="]
@@ -286,7 +286,7 @@ class Translator:
         ]
         for name, generator in dependent_subroutines:
             if self.symbols.get(name.upper()) == "subroutine":
-                self.symbols[name] = len(self.code)
+                self.symbols[name] = len(self.code) * 4
                 generator()
 
     def _generate_slash_mod_sub(self):
@@ -384,7 +384,7 @@ class Translator:
             [
                 Instruction(Opcode.POP, rt=Reg.T0.value),
                 Instruction(Opcode.LOAD, rt=Reg.T1.value, rs=Reg.T0.value, imm=0),
-                Instruction(Opcode.ADDI, rs=Reg.T0.value, rt=Reg.T0.value, imm=1),
+                Instruction(Opcode.ADDI, rs=Reg.T0.value, rt=Reg.T0.value, imm=4),
             ]
         )
         type_loop_start_addr = len(self.code)
@@ -399,15 +399,15 @@ class Translator:
                 Instruction(Opcode.CALL, addr=emit_sub_addr),
                 Instruction(Opcode.POP, rt=Reg.T1.value),
                 Instruction(Opcode.POP, rt=Reg.T0.value),
-                Instruction(Opcode.ADDI, rs=Reg.T0.value, rt=Reg.T0.value, imm=1),
+                Instruction(Opcode.ADDI, rs=Reg.T0.value, rt=Reg.T0.value, imm=4),
                 Instruction(Opcode.ADDI, rs=Reg.T1.value, rt=Reg.T1.value, imm=-1),
-                Instruction(Opcode.JMP, addr=type_loop_start_addr),
+                Instruction(Opcode.JMP, addr=type_loop_start_addr * 4),
             ]
         )
         after_loop_addr = len(self.code)
-        self.code[type_jz_to_end_loop_idx].imm = after_loop_addr - (
-            type_jz_to_end_loop_idx + 1
-        )
+        self.code[type_jz_to_end_loop_idx].imm = (
+            after_loop_addr - (type_jz_to_end_loop_idx + 1)
+        ) * 4
         self.emit([Instruction(Opcode.RET)])
 
     def _generate_not_equal_sub(self):
@@ -646,13 +646,14 @@ class Translator:
             final_string_address_word = (
                 string_data_start_word_addr + string_relative_offset_words
             )
-            upper_bits = (final_string_address_word >> 16) & 0xFFFF
-            lower_bits = final_string_address_word & 0xFFFF
+            final_string_byte_addr = final_string_address_word * 4
+            upper_bits = (final_string_byte_addr >> 16) & 0xFFFF
+            lower_bits = final_string_byte_addr & 0xFFFF
             self.code[instr_idx].imm = upper_bits
             self.code[instr_idx + 1].imm = lower_bits
             logging.info(
                 f"Patched string '{string_content}': LUI@idx={instr_idx} imm=0x{upper_bits:04X}, "
-                f"ORI@idx={instr_idx + 1} imm=0x{lower_bits:04X} -> final_word_addr=0x{final_string_address_word:08X}"
+                f"ORI@idx={instr_idx + 1} imm=0x{lower_bits:04X} -> final_byte_addr=0x{final_string_byte_addr:08X}"
             )
         return data_section_words_for_strings
 
@@ -662,14 +663,16 @@ class Translator:
                 raise RuntimeError(
                     f"Internal error: Variable '{var_name}' in relocations but not in data_variables."
                 )
-            variable_absolute_word_addr = self.data_variables[var_name]["offset_words"]
-            upper_bits = (variable_absolute_word_addr >> 16) & 0xFFFF
-            lower_bits = variable_absolute_word_addr & 0xFFFF
+            variable_absolute_byte_addr = (
+                self.data_variables[var_name]["offset_words"] * 4
+            )
+            upper_bits = (variable_absolute_byte_addr >> 16) & 0xFFFF
+            lower_bits = variable_absolute_byte_addr & 0xFFFF
             self.code[instr_idx].imm = upper_bits
             self.code[instr_idx + 1].imm = lower_bits
             logging.info(
                 f"Patched variable '{var_name}': LUI@idx={instr_idx} imm=0x{upper_bits:04X}, "
-                f"ORI@idx={instr_idx + 1} imm=0x{lower_bits:04X} -> final_word_addr=0x{variable_absolute_word_addr:08X}"
+                f"ORI@idx={instr_idx + 1} imm=0x{lower_bits:04X} -> final_byte_addr=0x{variable_absolute_byte_addr:08X}"
             )
 
     def _process_symbol_action(self, upper_token: str, action_or_info: Any):
@@ -779,13 +782,13 @@ class Translator:
 
             if not main_code_started:
                 main_code_started = True
-                main_code_start_addr = len(self.code)
+                main_code_start_addr = len(self.code) * 4
                 self.code[jmp_to_main_instruction_index].addr = main_code_start_addr
 
             self._process_token(token, token_stream)
 
         if not main_code_started:
-            main_code_start_addr = len(self.code)
+            main_code_start_addr = len(self.code) * 4
             self.code[jmp_to_main_instruction_index].addr = main_code_start_addr
 
         if not self.code or self.code[-1].opcode != Opcode.HALT:

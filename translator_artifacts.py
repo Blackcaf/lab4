@@ -22,7 +22,7 @@ def write_binary_and_listing(
         f.write(f"; Source: {source_file}\n")
         f.write(f"; Code section (size: {len(instructions) * 4} bytes)\n")
         for i, instr in enumerate(instructions):
-            f.write(instr.to_hex(i) + "\n")
+            f.write(instr.to_hex(i * 4) + "\n")
         f.write(f"\n; Data section (size: {data_section_size_bytes} bytes)\n")
         f.write("; Data words (decimal):\n")
         f.write(str(data_words) + "\n")
