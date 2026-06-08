@@ -161,14 +161,10 @@ def test_translator_and_machine(golden, caplog):
         stdout_sanitized = _normalize_stdout(stdout_normalized)
 
         log_final = _build_normalized_log(caplog)
-        if "out_code_preview" in golden.out:
-            assert binary_code_preview == str(golden.out["out_code_preview"])
-        if "out_code_sha256" in golden.out:
-            assert binary_code_sha256 == str(golden.out["out_code_sha256"])
-        if "out_code_size" in golden.out:
-            assert binary_code_size == golden.out["out_code_size"]
-        if "out_code" in golden.out:
-            assert binary_code_b64 == str(golden.out["out_code"])
+        assert binary_code_preview == str(golden.out["out_code_preview"])
+        assert binary_code_sha256 == str(golden.out["out_code_sha256"])
+        assert binary_code_size == golden.out["out_code_size"]
+        assert binary_code_b64 == str(golden.out["out_code"])
         expected_hex = _normalize_listing(str(golden.out["out_code_hex"]))
         assert hex_code_normalized == expected_hex
         expected_stdout = _normalize_stdout(str(golden.out["out_stdout"]))
