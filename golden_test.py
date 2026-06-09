@@ -66,9 +66,7 @@ def test_translator_and_machine(golden, caplog):
         )
 
         log_text = caplog.text
-        log_text = re.sub(
-            r"([A-Za-z]:)?[/\\].*?[/\\]tmp[\w\-]+", "<tmp>", log_text
-        )
+        log_text = re.sub(r"([A-Za-z]:)?[/\\].*?[/\\]tmp[\w\-]+", "<tmp>", log_text)
         log_text = re.sub(r"root:[^:]+:\d+ ", "", log_text)
 
         log_lines = log_text.splitlines()

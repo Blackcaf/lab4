@@ -677,37 +677,45 @@ class Translator:
 
     def _emit_inline_sub(self, upper_token: str):
         if upper_token == "DUP":
-            self.emit([
-                Instruction(Opcode.POP, rt=Reg.T0.value),
-                Instruction(Opcode.PUSH, rs=Reg.T0.value),
-                Instruction(Opcode.PUSH, rs=Reg.T0.value),
-            ])
+            self.emit(
+                [
+                    Instruction(Opcode.POP, rt=Reg.T0.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                ]
+            )
         elif upper_token == "SWAP":
-            self.emit([
-                Instruction(Opcode.POP, rt=Reg.T0.value),
-                Instruction(Opcode.POP, rt=Reg.T1.value),
-                Instruction(Opcode.PUSH, rs=Reg.T0.value),
-                Instruction(Opcode.PUSH, rs=Reg.T1.value),
-            ])
+            self.emit(
+                [
+                    Instruction(Opcode.POP, rt=Reg.T0.value),
+                    Instruction(Opcode.POP, rt=Reg.T1.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T1.value),
+                ]
+            )
         elif upper_token == "DROP":
             self.emit([Instruction(Opcode.POP, rt=Reg.T0.value)])
         elif upper_token == "OVER":
-            self.emit([
-                Instruction(Opcode.POP, rt=Reg.T0.value),
-                Instruction(Opcode.POP, rt=Reg.T1.value),
-                Instruction(Opcode.PUSH, rs=Reg.T1.value),
-                Instruction(Opcode.PUSH, rs=Reg.T0.value),
-                Instruction(Opcode.PUSH, rs=Reg.T1.value),
-            ])
+            self.emit(
+                [
+                    Instruction(Opcode.POP, rt=Reg.T0.value),
+                    Instruction(Opcode.POP, rt=Reg.T1.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T1.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T1.value),
+                ]
+            )
         elif upper_token == "ROT":
-            self.emit([
-                Instruction(Opcode.POP, rt=Reg.T2.value),
-                Instruction(Opcode.POP, rt=Reg.T1.value),
-                Instruction(Opcode.POP, rt=Reg.T0.value),
-                Instruction(Opcode.PUSH, rs=Reg.T1.value),
-                Instruction(Opcode.PUSH, rs=Reg.T2.value),
-                Instruction(Opcode.PUSH, rs=Reg.T0.value),
-            ])
+            self.emit(
+                [
+                    Instruction(Opcode.POP, rt=Reg.T2.value),
+                    Instruction(Opcode.POP, rt=Reg.T1.value),
+                    Instruction(Opcode.POP, rt=Reg.T0.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T1.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T2.value),
+                    Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                ]
+            )
 
     _INLINE_WORDS = frozenset({"DUP", "SWAP", "DROP", "OVER", "ROT"})
 
