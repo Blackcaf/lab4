@@ -675,7 +675,46 @@ class Translator:
                 f"ORI@idx={instr_idx + 1} imm=0x{lower_bits:04X} -> final_byte_addr=0x{variable_absolute_byte_addr:08X}"
             )
 
+    def _emit_inline_sub(self, upper_token: str):
+        if upper_token == "DUP":
+            self.emit([
+                Instruction(Opcode.POP, rt=Reg.T0.value),
+                Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                Instruction(Opcode.PUSH, rs=Reg.T0.value),
+            ])
+        elif upper_token == "SWAP":
+            self.emit([
+                Instruction(Opcode.POP, rt=Reg.T0.value),
+                Instruction(Opcode.POP, rt=Reg.T1.value),
+                Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                Instruction(Opcode.PUSH, rs=Reg.T1.value),
+            ])
+        elif upper_token == "DROP":
+            self.emit([Instruction(Opcode.POP, rt=Reg.T0.value)])
+        elif upper_token == "OVER":
+            self.emit([
+                Instruction(Opcode.POP, rt=Reg.T0.value),
+                Instruction(Opcode.POP, rt=Reg.T1.value),
+                Instruction(Opcode.PUSH, rs=Reg.T1.value),
+                Instruction(Opcode.PUSH, rs=Reg.T0.value),
+                Instruction(Opcode.PUSH, rs=Reg.T1.value),
+            ])
+        elif upper_token == "ROT":
+            self.emit([
+                Instruction(Opcode.POP, rt=Reg.T2.value),
+                Instruction(Opcode.POP, rt=Reg.T1.value),
+                Instruction(Opcode.POP, rt=Reg.T0.value),
+                Instruction(Opcode.PUSH, rs=Reg.T1.value),
+                Instruction(Opcode.PUSH, rs=Reg.T2.value),
+                Instruction(Opcode.PUSH, rs=Reg.T0.value),
+            ])
+
+    _INLINE_WORDS = frozenset({"DUP", "SWAP", "DROP", "OVER", "ROT"})
+
     def _process_symbol_action(self, upper_token: str, action_or_info: Any):
+        if upper_token in self._INLINE_WORDS:
+            self._emit_inline_sub(upper_token)
+            return
         if isinstance(action_or_info, int):
             self.emit([Instruction(Opcode.CALL, addr=action_or_info)])
             return
@@ -812,7 +851,7 @@ def main(source_file: str, target_file: str):
 
     translator = Translator()
     instructions, data_words = translator.translate(source_code)
-    write_binary_and_listing(source_file, target_file, instructions, data_words)
+    write_binary_and_listing(target_file, instructions, data_words)
 
     print(f"Successfully translated {source_file} to {target_file}")
     print(
