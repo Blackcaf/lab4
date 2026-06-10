@@ -2,8 +2,8 @@ import struct
 
 import pytest
 
-from binary_image import bytes_to_words, split_code_and_data
-from isa import Opcode
+from core.binary_image import bytes_to_words, split_code_and_data
+from core.isa import Opcode
 
 
 def _pack_words(words: list[int]) -> bytes:

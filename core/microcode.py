@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum, auto
 
-from isa import Opcode
+from core.isa import Opcode
 
 
 class MicroOp(Enum):

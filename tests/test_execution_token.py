@@ -1,5 +1,5 @@
-from isa import Opcode
-from translator import Translator
+from core.isa import Opcode
+from core.translator import Translator
 
 
 def test_execution_token_literal_compiles_to_address_push():

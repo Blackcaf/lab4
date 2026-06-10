@@ -1,4 +1,4 @@
-from isa import Instruction, Opcode
+from core.isa import Instruction, Opcode
 
 
 def test_lui_encoding_does_not_mutate_instruction_state():

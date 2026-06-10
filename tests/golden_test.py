@@ -12,13 +12,13 @@ import tempfile
 
 import pytest
 
-import machine
-import translator
+import core.machine as machine
+import core.translator as translator
 
 MAX_LOG_LINES = 500
 
 
-@pytest.mark.golden_test("golden/*.yml")
+@pytest.mark.golden_test("../golden/*.yml")
 def test_translator_and_machine(golden, caplog):
     caplog.set_level(logging.DEBUG)
 

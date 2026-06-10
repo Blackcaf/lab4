@@ -497,15 +497,15 @@ python machine.py <binary_code_file> <input_file>
 
 Общая схема:
 
-![Общая схема](all.png)
+![Общая схема](img/all.png)
 
 Control Unit:
 
-![Control Unit](cu.png)
+![Control Unit](img/cu.png)
 
 DataPath:
 
-![DataPath](dp.png)
+![DataPath](img/dp.png)
 
 ### Описание регистров и сигналов
 

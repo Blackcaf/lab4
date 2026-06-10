@@ -5,9 +5,16 @@ import sys
 from collections import deque
 from typing import TypedDict
 
-from binary_image import bytes_to_words, split_code_and_data
-from isa import IO_INPUT_PORT, IO_OUTPUT_PORT, MEMORY_SIZE, Instruction, Opcode, Reg
-from microcode import MicroOp, get_microcode_rom
+from core.binary_image import bytes_to_words, split_code_and_data
+from core.isa import (
+    IO_INPUT_PORT,
+    IO_OUTPUT_PORT,
+    MEMORY_SIZE,
+    Instruction,
+    Opcode,
+    Reg,
+)
+from core.microcode import MicroOp, get_microcode_rom
 
 CACHE_HIT_LATENCY = 1
 CACHE_MISS_LATENCY = 10

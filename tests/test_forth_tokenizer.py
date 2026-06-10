@@ -1,4 +1,4 @@
-from forth_tokenizer import tokenize_source
+from core.forth_tokenizer import tokenize_source
 
 
 def test_tokenizer_strips_comments_and_uppercases_tokens():

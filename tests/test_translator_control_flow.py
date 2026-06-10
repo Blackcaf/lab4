@@ -1,8 +1,8 @@
 import pytest
 
-from isa import Opcode
-from translator import Translator
-from translator_exceptions import TranslatorSyntaxError, UnknownWordError
+from core.isa import Opcode
+from core.translator import Translator
+from core.translator_exceptions import TranslatorSyntaxError, UnknownWordError
 
 
 def _opcodes(source: str) -> list[Opcode]:

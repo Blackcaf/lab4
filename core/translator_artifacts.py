@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import struct
 
-from isa import Instruction
+from core.isa import Instruction
 
 
 def write_binary_and_listing(

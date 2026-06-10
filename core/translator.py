@@ -5,10 +5,10 @@ import sys
 from collections.abc import Sequence
 from typing import Any, Iterator, cast
 
-from forth_tokenizer import tokenize_source
-from isa import IO_INPUT_PORT, IO_OUTPUT_PORT, Instruction, Opcode, Reg
-from translator_artifacts import write_binary_and_listing
-from translator_exceptions import TranslatorSyntaxError, UnknownWordError
+from core.forth_tokenizer import tokenize_source
+from core.isa import IO_INPUT_PORT, IO_OUTPUT_PORT, Instruction, Opcode, Reg
+from core.translator_artifacts import write_binary_and_listing
+from core.translator_exceptions import TranslatorSyntaxError, UnknownWordError
 
 
 class Translator:

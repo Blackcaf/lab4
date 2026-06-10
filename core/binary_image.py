@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import struct
 
-from isa import Opcode
+from core.isa import Opcode
 
 
 def bytes_to_words(binary_code: bytes) -> list[int]:
