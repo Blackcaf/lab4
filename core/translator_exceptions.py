@@ -1,10 +1,10 @@
 class TranslatorError(Exception):
-    """Base class for translator errors."""
+    """Базовый класс ошибок транслятора."""
 
 
 class TranslatorSyntaxError(TranslatorError):
-    """Invalid source program structure."""
+    """Неверный синтаксис исходной программы."""
 
 
 class UnknownWordError(TranslatorError):
-    """Unknown token/word encountered during translation."""
+    """Неизвестное слово/токен при трансляции."""
