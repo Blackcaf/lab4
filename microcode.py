@@ -62,7 +62,6 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
         MicroOp.LATCH_MAR_PC,
         MicroOp.INSTR_READ,
         MicroOp.LATCH_PC_INC,
-        MicroOp.LATCH_IR,
     ]
 
     microcode = {

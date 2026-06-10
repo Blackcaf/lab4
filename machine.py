@@ -410,7 +410,8 @@ class ControlUnit:
     ):
         if op == MicroOp.INSTR_READ:
             data, latency = dp.instruction_cache.read(dp.mar)
-            dp.mdr = data
+            dp.ir_reg = data
+            self.current_decoded_ir = dp.decode_ir()
             if latency > 1:
                 self.stall_cycles = latency - 1
         elif op == MicroOp.CACHE_READ:
