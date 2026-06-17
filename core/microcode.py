@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from enum import Enum, auto
 
 from core.isa import Opcode
@@ -57,7 +58,37 @@ class MicroOp(Enum):
     HALT_PROCESSOR = auto()
 
 
-def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
+MICROCODE_SIZE = 64
+
+
+class MicrocodeMemory:
+    def __init__(self) -> None:
+        self.size = MICROCODE_SIZE
+        self.memory: list[list[MicroOp] | None] = [None] * self.size
+        self._port_used = False
+
+    def tick(self) -> None:
+        self._port_used = False
+
+    def write(self, addr: int, data: list[MicroOp]) -> None:
+        assert 0 <= addr < self.size, f"Invalid microcode address: {addr}"
+        self.memory[addr] = data
+        logging.info(
+            f"MICROCODE: Wrote {len(data)} micro-ops at addr {addr} "
+            f"(Opcode.{Opcode(addr).name})"
+        )
+
+    def read(self, addr: int) -> list[MicroOp]:
+        assert 0 <= addr < self.size, f"Invalid microcode address: {addr}"
+        assert not self._port_used, "Microcode memory: port busy this tick"
+        self._port_used = True
+        data = self.memory[addr]
+        if data is None:
+            return []
+        return data
+
+
+def _build_microcode_rom() -> MicrocodeMemory:
     fetch_cycle = [
         MicroOp.LATCH_MAR_PC,
         MicroOp.INSTR_READ,
@@ -274,8 +305,13 @@ def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
             MicroOp.FINISH_INSTRUCTION,
         ],
     }
-    full_microcode = {}
-    for opcode, micro_ops in microcode.items():
-        full_microcode[opcode] = fetch_cycle + micro_ops
 
-    return full_microcode
+    rom = MicrocodeMemory()
+    for opcode, micro_ops in microcode.items():
+        rom.write(opcode.value, fetch_cycle + micro_ops)
+
+    return rom
+
+
+def get_microcode_rom() -> MicrocodeMemory:
+    return _build_microcode_rom()

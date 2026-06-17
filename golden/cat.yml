@@ -176,6 +176,35 @@ out_stdout: |-
   Total ticks: 4204
 
 out_log: |-
+  INFO     MICROCODE: Wrote 4 micro-ops at addr 0 (Opcode.NOP)
+  INFO     MICROCODE: Wrote 4 micro-ops at addr 1 (Opcode.HALT)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 16 (Opcode.ADD)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 17 (Opcode.SUB)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 18 (Opcode.MUL)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 19 (Opcode.DIV)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 20 (Opcode.MOD)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 22 (Opcode.OR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 21 (Opcode.AND)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 23 (Opcode.XOR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 24 (Opcode.CMP)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 25 (Opcode.SHL)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 26 (Opcode.SHR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 32 (Opcode.ADDI)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 38 (Opcode.ORI)
+  INFO     MICROCODE: Wrote 7 micro-ops at addr 37 (Opcode.LUI)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 39 (Opcode.IN)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 40 (Opcode.OUT)
+  INFO     MICROCODE: Wrote 10 micro-ops at addr 33 (Opcode.LOAD)
+  INFO     MICROCODE: Wrote 10 micro-ops at addr 34 (Opcode.STORE)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 35 (Opcode.JZ)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 36 (Opcode.JNZ)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 53 (Opcode.JMPR)
+  INFO     MICROCODE: Wrote 16 micro-ops at addr 54 (Opcode.CALLR)
+  INFO     MICROCODE: Wrote 12 micro-ops at addr 48 (Opcode.PUSH)
+  INFO     MICROCODE: Wrote 12 micro-ops at addr 49 (Opcode.POP)
+  INFO     MICROCODE: Wrote 5 micro-ops at addr 50 (Opcode.JMP)
+  INFO     MICROCODE: Wrote 13 micro-ops at addr 51 (Opcode.CALL)
+  INFO     MICROCODE: Wrote 15 micro-ops at addr 52 (Opcode.RET)
   INFO     Starting simulation...
   INFO     TICK:    0 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 61536 | DSP: 45536 | MicroPC: 0 | Zero: False
   DEBUG    TICK 1: Executing micro-op: LATCH_MAR_PC
@@ -647,33 +676,4 @@ out_log: |-
   DEBUG    TICK 223: Executing micro-op: INSTR_READ
   WARNING  I-CACHE: MISS on read at addr 0x021C. Accessing memory.
   INFO     TICK:  223 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 8 cycles remaining.
-  INFO     TICK:  224 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 7 cycles remaining.
-  INFO     TICK:  225 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 6 cycles remaining.
-  INFO     TICK:  226 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 5 cycles remaining.
-  INFO     TICK:  227 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 4 cycles remaining.
-  INFO     TICK:  228 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 3 cycles remaining.
-  INFO     TICK:  229 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 2 cycles remaining.
-  INFO     TICK:  230 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 1 cycles remaining.
-  INFO     TICK:  231 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  INFO     STALL: 0 cycles remaining.
-  INFO     TICK:  232 | PC: 0x021C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: True
-  DEBUG    TICK 233: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:  233 | PC: 0x0220 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 3 | Zero: True
-  DEBUG    TICK 234: Executing micro-op: LATCH_A_SP
-  INFO     TICK:  234 | PC: 0x0220 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 4 | Zero: True
-  DEBUG    TICK 235: Executing micro-op: LATCH_B_CONST_1
-  INFO     TICK:  235 | PC: 0x0220 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 5 | Zero: True
-  DEBUG    TICK 236: Executing micro-op: ALU_SUB
-  INFO     TICK:  236 | PC: 0x0220 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 6 | Zero: False
-  DEBUG    TICK 237: Executing micro-op: LATCH_SP_ALU
-  INFO     TICK:  237 | PC: 0x0220 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45524 | MicroPC: 7 | Zero: False
-  DEBUG    TICK 238: Executing micro-op: LATCH_MAR_ALU
   EOF

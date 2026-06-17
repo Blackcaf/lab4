@@ -260,7 +260,7 @@ class ControlUnit:
 
         decoded_ir = self.current_decoded_ir
         opcode = decoded_ir["opcode"]
-        micro_program = self.microcode_rom.get(opcode)
+        micro_program = self.microcode_rom.read(opcode.value)
 
         if not micro_program:
             raise ValueError(f"No microprogram for opcode: {opcode}")
@@ -477,6 +477,7 @@ def _run_simulation_loop(control_unit: "ControlUnit", datapath: "DataPath", limi
     while not control_unit.halted and control_unit.tick_counter < limit:
         datapath.instruction_memory.tick()
         datapath.data_memory.tick()
+        control_unit.microcode_rom.tick()
 
         try:
             decoded = control_unit.current_decoded_ir

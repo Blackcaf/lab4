@@ -424,6 +424,35 @@ out_log: |-
   INFO     Patched variable 'SUM_VAR': LUI@idx=301 imm=0x0000, ORI@idx=302 imm=0x0004 -> final_byte_addr=0x00000004
   INFO     Patched string 'Sum (Cold Cache):': LUI@idx=286 imm=0x0000, ORI@idx=287 imm=0x010C -> final_byte_addr=0x0000010C
   INFO     Patched string 'Sum (Warm Cache):': LUI@idx=297 imm=0x0000, ORI@idx=298 imm=0x0154 -> final_byte_addr=0x00000154
+  INFO     MICROCODE: Wrote 4 micro-ops at addr 0 (Opcode.NOP)
+  INFO     MICROCODE: Wrote 4 micro-ops at addr 1 (Opcode.HALT)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 16 (Opcode.ADD)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 17 (Opcode.SUB)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 18 (Opcode.MUL)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 19 (Opcode.DIV)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 20 (Opcode.MOD)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 22 (Opcode.OR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 21 (Opcode.AND)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 23 (Opcode.XOR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 24 (Opcode.CMP)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 25 (Opcode.SHL)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 26 (Opcode.SHR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 32 (Opcode.ADDI)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 38 (Opcode.ORI)
+  INFO     MICROCODE: Wrote 7 micro-ops at addr 37 (Opcode.LUI)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 39 (Opcode.IN)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 40 (Opcode.OUT)
+  INFO     MICROCODE: Wrote 10 micro-ops at addr 33 (Opcode.LOAD)
+  INFO     MICROCODE: Wrote 10 micro-ops at addr 34 (Opcode.STORE)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 35 (Opcode.JZ)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 36 (Opcode.JNZ)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 53 (Opcode.JMPR)
+  INFO     MICROCODE: Wrote 16 micro-ops at addr 54 (Opcode.CALLR)
+  INFO     MICROCODE: Wrote 12 micro-ops at addr 48 (Opcode.PUSH)
+  INFO     MICROCODE: Wrote 12 micro-ops at addr 49 (Opcode.POP)
+  INFO     MICROCODE: Wrote 5 micro-ops at addr 50 (Opcode.JMP)
+  INFO     MICROCODE: Wrote 13 micro-ops at addr 51 (Opcode.CALL)
+  INFO     MICROCODE: Wrote 15 micro-ops at addr 52 (Opcode.RET)
   INFO     Starting simulation...
   INFO     TICK:    0 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 61536 | DSP: 45536 | MicroPC: 0 | Zero: False
   DEBUG    TICK 1: Executing micro-op: LATCH_MAR_PC
@@ -872,33 +901,4 @@ out_log: |-
   DEBUG    TICK 213: Executing micro-op: LATCH_SP_ALU
   INFO     TICK:  213 | PC: 0x011C | IR: 0xC4040000 (POP   R4) | SP: 61532 | DSP: 45536 | MicroPC: 10 | Zero: False
   DEBUG    TICK 214: Executing micro-op: LATCH_RT_MDR
-  INFO     TICK:  214 | PC: 0x011C | IR: 0xC4040000 (POP   R4) | SP: 61532 | DSP: 45536 | MicroPC: 11 | Zero: False
-  DEBUG    TICK 215: Executing micro-op: FINISH_INSTRUCTION
-  INFO     TICK:  215 | PC: 0x011C | IR: 0xC4040000 (POP   R4) | SP: 61532 | DSP: 45536 | MicroPC: 0 | Zero: False
-  DEBUG    TICK 216: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:  216 | PC: 0x011C | IR: 0xC4040000 (POP   R4) | SP: 61532 | DSP: 45536 | MicroPC: 1 | Zero: False
-  DEBUG    TICK 217: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x011C. Accessing memory.
-  INFO     TICK:  217 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 8 cycles remaining.
-  INFO     TICK:  218 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 7 cycles remaining.
-  INFO     TICK:  219 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 6 cycles remaining.
-  INFO     TICK:  220 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 5 cycles remaining.
-  INFO     TICK:  221 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 4 cycles remaining.
-  INFO     TICK:  222 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 3 cycles remaining.
-  INFO     TICK:  223 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 2 cycles remaining.
-  INFO     TICK:  224 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 1 cycles remaining.
-  INFO     TICK:  225 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  INFO     STALL: 0 cycles remaining.
-  INFO     TICK:  226 | PC: 0x011C | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 2 | Zero: False
-  DEBUG    TICK 227: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:  227 | PC: 0x0120 | IR: 0x88640000 (STORE R4, 0(R3)) | SP: 61532 | DSP: 45536 | MicroPC: 3 | Zero: False
-  DEBUG    TICK 228: Executing micro-op: LATCH_A_RS
   EOF

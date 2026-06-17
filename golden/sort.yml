@@ -753,6 +753,35 @@ out_log: |-
   INFO     Patched variable 'J_VAR': LUI@idx=544 imm=0x0000, ORI@idx=545 imm=0x00D0 -> final_byte_addr=0x000000D0
   INFO     Patched variable 'I_VAR': LUI@idx=549 imm=0x0000, ORI@idx=550 imm=0x00CC -> final_byte_addr=0x000000CC
   INFO     Patched variable 'I_VAR': LUI@idx=554 imm=0x0000, ORI@idx=555 imm=0x00CC -> final_byte_addr=0x000000CC
+  INFO     MICROCODE: Wrote 4 micro-ops at addr 0 (Opcode.NOP)
+  INFO     MICROCODE: Wrote 4 micro-ops at addr 1 (Opcode.HALT)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 16 (Opcode.ADD)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 17 (Opcode.SUB)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 18 (Opcode.MUL)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 19 (Opcode.DIV)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 20 (Opcode.MOD)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 22 (Opcode.OR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 21 (Opcode.AND)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 23 (Opcode.XOR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 24 (Opcode.CMP)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 25 (Opcode.SHL)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 26 (Opcode.SHR)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 32 (Opcode.ADDI)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 38 (Opcode.ORI)
+  INFO     MICROCODE: Wrote 7 micro-ops at addr 37 (Opcode.LUI)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 39 (Opcode.IN)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 40 (Opcode.OUT)
+  INFO     MICROCODE: Wrote 10 micro-ops at addr 33 (Opcode.LOAD)
+  INFO     MICROCODE: Wrote 10 micro-ops at addr 34 (Opcode.STORE)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 35 (Opcode.JZ)
+  INFO     MICROCODE: Wrote 6 micro-ops at addr 36 (Opcode.JNZ)
+  INFO     MICROCODE: Wrote 8 micro-ops at addr 53 (Opcode.JMPR)
+  INFO     MICROCODE: Wrote 16 micro-ops at addr 54 (Opcode.CALLR)
+  INFO     MICROCODE: Wrote 12 micro-ops at addr 48 (Opcode.PUSH)
+  INFO     MICROCODE: Wrote 12 micro-ops at addr 49 (Opcode.POP)
+  INFO     MICROCODE: Wrote 5 micro-ops at addr 50 (Opcode.JMP)
+  INFO     MICROCODE: Wrote 13 micro-ops at addr 51 (Opcode.CALL)
+  INFO     MICROCODE: Wrote 15 micro-ops at addr 52 (Opcode.RET)
   INFO     Starting simulation...
   INFO     TICK:    0 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 61536 | DSP: 45536 | MicroPC: 0 | Zero: False
   DEBUG    TICK 1: Executing micro-op: LATCH_MAR_PC
@@ -1180,33 +1209,4 @@ out_log: |-
   DEBUG    TICK 203: Executing micro-op: LATCH_MAR_ALU
   INFO     TICK:  203 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 8 | Zero: False
   DEBUG    TICK 204: Executing micro-op: LATCH_A_PC
-  INFO     CALL: Saving return address 0x02B8
-  INFO     TICK:  204 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 9 | Zero: False
-  DEBUG    TICK 205: Executing micro-op: LATCH_MDR_A
-  INFO     TICK:  205 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 10 | Zero: False
-  DEBUG    TICK 206: Executing micro-op: CACHE_WRITE
-  WARNING  D-CACHE: MISS on write at addr 0xF054. Writing to memory.
-  INFO     TICK:  206 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 8 cycles remaining.
-  INFO     TICK:  207 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 7 cycles remaining.
-  INFO     TICK:  208 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 6 cycles remaining.
-  INFO     TICK:  209 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 5 cycles remaining.
-  INFO     TICK:  210 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 4 cycles remaining.
-  INFO     TICK:  211 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 3 cycles remaining.
-  INFO     TICK:  212 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 2 cycles remaining.
-  INFO     TICK:  213 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 1 cycles remaining.
-  INFO     TICK:  214 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  INFO     STALL: 0 cycles remaining.
-  INFO     TICK:  215 | PC: 0x02B8 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 11 | Zero: False
-  DEBUG    TICK 216: Executing micro-op: LATCH_PC_ADDR
-  INFO     JMP/CALL: Setting PC to 0x0114
-  INFO     TICK:  216 | PC: 0x0114 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61524 | DSP: 45528 | MicroPC: 12 | Zero: False
-  DEBUG    TICK 217: Executing micro-op: FINISH_INSTRUCTION
   EOF
