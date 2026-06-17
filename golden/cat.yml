@@ -6,11 +6,8 @@ in_source: |-
       EMIT
   REPEAT
   HALT
-
-in_stdin: "Hello, World!\n"
-
+in_stdin: Hello, World!\n
 in_limit: 500000
-
 in_cache_size: 256
 
 out_code: !!binary |
@@ -175,9 +172,8 @@ out_stdout: |-
   ============================================================
   Code size: 142 words (568 bytes). Data size: 0 words (0 bytes) (Harvard: separate instruction/data memories).
 
-  Simulation output: 'Hello, World!
-  '
-  Total ticks: 3945
+  Simulation output: 'Hello, World!\n'
+  Total ticks: 4204
 
 out_log: |-
   INFO     Starting simulation...

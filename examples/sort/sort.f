@@ -1,8 +1,8 @@
-CREATE NUMBERS ALLOT 51  \ Массив: NUMBERS[0]=N, NUMBERS[1..N] = значения
-VARIABLE I_VAR           \ Счетчик для внешнего цикла
-VARIABLE J_VAR           \ Счетчик для внутреннего цикла
-VARIABLE V_J             \ Временная переменная для array[j]
-VARIABLE V_J1            \ Временная переменная для array[j+1]
+CREATE NUMBERS ALLOT 51
+VARIABLE I_VAR
+VARIABLE J_VAR
+VARIABLE V_J
+VARIABLE V_J1
 
 : CR 10 EMIT ;
 : DIGIT>CHAR 48 + ;
@@ -11,7 +11,7 @@ VARIABLE V_J1            \ Временная переменная для array[
 
 VARIABLE PARSE_ACCUM
 
-: PARSE-INT \ читает число до пробела/перевода строки, оставляет его на стеке
+: PARSE-INT
     0 PARSE_ACCUM !
     BEGIN
         KEY DUP 48 <
@@ -38,7 +38,7 @@ VARIABLE PARSE_ACCUM
     BEGIN
         I_VAR @ NUMBERS @ <
     WHILE
-        NUMBERS I_VAR @ 4 * 4 + + 
+        NUMBERS I_VAR @ 4 * 4 + +
         PARSE-INT SWAP !
         I_VAR @ 1+ I_VAR !
     REPEAT
@@ -57,10 +57,10 @@ VARIABLE PARSE_ACCUM
 
 : BUBBLE_SORT
     0 I_VAR !
-    BEGIN                 \ Внешний цикл for(i=0; i < N-1; i++)
+    BEGIN
         I_VAR @ NUMBERS @ 1- <
     WHILE
-        0 J_VAR !         \ Внутренний цикл for(j=0; j < N-i-1; j++)
+        0 J_VAR !
         BEGIN
             J_VAR @ NUMBERS @ I_VAR @ - 1- <
         WHILE

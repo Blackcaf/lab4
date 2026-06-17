@@ -1,9 +1,3 @@
-\ Тест, демонстрирующий влияние кэш-памяти на производительность
-\ Оптимизирован для cache_size = 32 слова. Размер массива = 64 слова.
-
-\ ======================================================================
-\ --- Утилиты для вывода ---
-\ ======================================================================
 : CR 10 EMIT ;
 : DIGIT>CHAR 48 + ;
 : U.SIMPLE
@@ -13,14 +7,11 @@
         10 /MOD SWAP U.SIMPLE DIGIT>CHAR EMIT
     THEN ;
 
-
 VARIABLE I_VAR
 VARIABLE SUM_VAR
 VARIABLE ARRAY-SIZE-VAR
 
-\ Создаем массив в 2 раза больше размера кеша
 CREATE BIG-ARRAY ALLOT 64
-
 
 : FILL-ARRAY
     0 I_VAR !
@@ -28,7 +19,7 @@ CREATE BIG-ARRAY ALLOT 64
         I_VAR @ ARRAY-SIZE-VAR @ <
     WHILE
         I_VAR @ 1+
-        BIG-ARRAY I_VAR @ + !
+        BIG-ARRAY I_VAR @ 4 * + !
         I_VAR @ 1+ I_VAR !
     REPEAT
 ;
@@ -39,13 +30,12 @@ CREATE BIG-ARRAY ALLOT 64
     BEGIN
         I_VAR @ ARRAY-SIZE-VAR @ <
     WHILE
-        SUM_VAR @ BIG-ARRAY I_VAR @ + @ +
+        SUM_VAR @ BIG-ARRAY I_VAR @ 4 * + @ +
         SUM_VAR !
         I_VAR @ 1+ I_VAR !
     REPEAT
 ;
 
-\ Устанавливаем размер массива в переменную
 64 ARRAY-SIZE-VAR !
 
 FILL-ARRAY

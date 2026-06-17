@@ -1,11 +1,8 @@
 in_source: |-
   s" Hello, World!" TYPE CR
   HALT
-
 in_stdin: ''
-
 in_limit: 500000
-
 in_cache_size: 256
 
 out_code: !!binary |

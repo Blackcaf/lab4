@@ -1,10 +1,4 @@
 in_source: |-
-  \ Тест, демонстрирующий влияние кэш-памяти на производительность
-  \ Оптимизирован для cache_size = 32 слова. Размер массива = 64 слова.
-
-  \ ======================================================================
-  \ --- Утилиты для вывода ---
-  \ ======================================================================
   : CR 10 EMIT ;
   : DIGIT>CHAR 48 + ;
   : U.SIMPLE
@@ -14,14 +8,11 @@ in_source: |-
           10 /MOD SWAP U.SIMPLE DIGIT>CHAR EMIT
       THEN ;
 
-
   VARIABLE I_VAR
   VARIABLE SUM_VAR
   VARIABLE ARRAY-SIZE-VAR
 
-  \ Создаем массив в 2 раза больше размера кеша
   CREATE BIG-ARRAY ALLOT 64
-
 
   : FILL-ARRAY
       0 I_VAR !
@@ -29,7 +20,7 @@ in_source: |-
           I_VAR @ ARRAY-SIZE-VAR @ <
       WHILE
           I_VAR @ 1+
-          BIG-ARRAY I_VAR @ + !
+          BIG-ARRAY I_VAR @ 4 * + !
           I_VAR @ 1+ I_VAR !
       REPEAT
   ;
@@ -40,13 +31,12 @@ in_source: |-
       BEGIN
           I_VAR @ ARRAY-SIZE-VAR @ <
       WHILE
-          SUM_VAR @ BIG-ARRAY I_VAR @ + @ +
+          SUM_VAR @ BIG-ARRAY I_VAR @ 4 * + @ +
           SUM_VAR !
           I_VAR @ 1+ I_VAR !
       REPEAT
   ;
 
-  \ Устанавливаем размер массива в переменную
   64 ARRAY-SIZE-VAR !
 
   FILL-ARRAY
@@ -57,15 +47,12 @@ in_source: |-
   S" Sum (Warm Cache): " TYPE SUM_VAR @ U.SIMPLE CR
 
   HALT
-
 in_stdin: ''
-
 in_limit: 500000
-
 in_cache_size: 256
 
 out_code: !!binary |
-  yAAEKMQDAACgAwAB0AAAAJwDAADAYAAA0AAAAMQDAADAYAAAwGAAANAAAADEAwAAxAQAAMBgAADA
+  yAAEWMQDAACgAwAB0AAAAJwDAADAYAAA0AAAAMQDAADAYAAAwGAAANAAAADEAwAAxAQAAMBgAADA
   gAAA0AAAAMQFAADEBAAAxAMAAMCAAADAoAAAwGAAANAAAADEAwAA0AAAAMQEAADEAwAAYGQYAMBg
   AADQAAAAxAMAAIBjAAHAYAAA0AAAAMQDAADEBAAAwIAAAMBgAADAgAAA0AAAAMQEAADEAwAAwGAA
   AMCAAADAYAAAwIAAANAAAADEAwAAhGMAAMBgAADQAAAAxAQAAMQDAABQZCgATGQ4AMDgAADAoAAA
@@ -77,25 +64,25 @@ out_code: !!binary |
   AAHY0AAAAIADAArAYAAAzAAABNAAAACAAwAwwGAAAMQEAADEAwAAQGQYAMBgAADQAAAAxAMAAMBg
   AADAYAAAgAMACsBgAADMAAFUxAMAAIwDAAzMAAIYzAAABMgAAoiAAwAKwGAAAMwAAMzEAwAAxAQA
   AMBgAADAgAAAzAACNMwAAhjMAAAE0AAAAIADAADAYAAAlAMAAJhjAADAYAAAzAABFJQDAACYYwAA
-  wGAAAMwAALyUAwAAmGMACMBgAADMAAC8zAABVMQDAACMAwBslAMAAJhjAADAYAAAzAAAvMwAAHiU
-  AwAAmGMADMBgAACUAwAAmGMAAMBgAADMAAC8xAQAAMQDAABAZBgAwGAAAMwAARSUAwAAmGMAAMBg
-  AADMAAC8zAAAeJQDAACYYwAAwGAAAMwAARTIAAKk0AAAAIADAADAYAAAlAMAAJhjAATAYAAAzAAB
-  FIADAADAYAAAlAMAAJhjAADAYAAAzAABFJQDAACYYwAAwGAAAMwAALyUAwAAmGMACMBgAADMAAC8
-  zAABVMQDAACMAwCIlAMAAJhjAATAYAAAzAAAvJQDAACYYwAMwGAAAJQDAACYYwAAwGAAAMwAALzE
-  BAAAxAMAAEBkGADAYAAAzAAAvMQEAADEAwAAQGQYAMBgAACUAwAAmGMABMBgAADMAAEUlAMAAJhj
-  AADAYAAAzAAAvMwAAHiUAwAAmGMAAMBgAADMAAEUyAADcNAAAACAAwBAwGAAAJQDAACYYwAIwGAA
-  AMwAARTMAAKMzAADQJQDAACYYwEMwGAAAMwAAcyUAwAAmGMABMBgAADMAAC8zAACNMwAAgjMAANA
-  lAMAAJhjAVTAYAAAzAABzJQDAACYYwAEwGAAAMwAALzMAAI0zAACCAQAAAAAAAAAAAAAAAAAAAAA
+  wGAAAMwAALyUAwAAmGMACMBgAADMAAC8zAABVMQDAACMAwCElAMAAJhjAADAYAAAzAAAvMwAAHiU
+  AwAAmGMADMBgAACUAwAAmGMAAMBgAADMAAC8gAMABMBgAADEBAAAxAMAAEhkGADAYAAAxAQAAMQD
+  AABAZBgAwGAAAMwAARSUAwAAmGMAAMBgAADMAAC8zAAAeJQDAACYYwAAwGAAAMwAARTIAAKk0AAA
+  AIADAADAYAAAlAMAAJhjAATAYAAAzAABFIADAADAYAAAlAMAAJhjAADAYAAAzAABFJQDAACYYwAA
+  wGAAAMwAALyUAwAAmGMACMBgAADMAAC8zAABVMQDAACMAwCglAMAAJhjAATAYAAAzAAAvJQDAACY
+  YwAMwGAAAJQDAACYYwAAwGAAAMwAALyAAwAEwGAAAMQEAADEAwAASGQYAMBgAADEBAAAxAMAAEBk
+  GADAYAAAzAAAvMQEAADEAwAAQGQYAMBgAACUAwAAmGMABMBgAADMAAEUlAMAAJhjAADAYAAAzAAA
+  vMwAAHiUAwAAmGMAAMBgAADMAAEUyAADiNAAAACAAwBAwGAAAJQDAACYYwAIwGAAAMwAARTMAAKM
+  zAADWJQDAACYYwEMwGAAAMwAAcyUAwAAmGMABMBgAADMAAC8zAACNMwAAgjMAANYlAMAAJhjAVTA
+  YAAAzAABzJQDAACYYwAEwGAAAMwAALzMAAI0zAACCAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEQAAAFMAAAB1AAAAbQAAACAAAAAoAAAAQwAA
-  AG8AAABsAAAAZAAAACAAAABDAAAAYQAAAGMAAABoAAAAZQAAACkAAAA6AAAAEQAAAFMAAAB1AAAA
-  bQAAACAAAAAoAAAAVwAAAGEAAAByAAAAbQAAACAAAABDAAAAYQAAAGMAAABoAAAAZQAAACkAAAA6
-
+  AAAAAAAAAAAAAAAAAAAAAAAAAAAAEQAAAFMAAAB1AAAAbQAAACAAAAAoAAAAQwAAAG8AAABsAAAA
+  ZAAAACAAAABDAAAAYQAAAGMAAABoAAAAZQAAACkAAAA6AAAAEQAAAFMAAAB1AAAAbQAAACAAAAAo
+  AAAAVwAAAGEAAAByAAAAbQAAACAAAABDAAAAYQAAAGMAAABoAAAAZQAAACkAAAA6
 out_code_hex: |-
-  0x0000: C8000428  JMP   0x0000428
+  0x0000: C8000458  JMP   0x0000458
   0x0004: C4030000  POP   R3
   0x0008: A0030001  OUT   port 1, R3
   0x000C: D0000000  RET
@@ -274,7 +261,7 @@ out_code_hex: |-
   0x02C0: CC0000BC  CALL  0x00000BC
   0x02C4: CC000154  CALL  0x0000154
   0x02C8: C4030000  POP   R3
-  0x02CC: 8C03006C  JZ    R3, 108
+  0x02CC: 8C030084  JZ    R3, 132
   0x02D0: 94030000  LUI   R3, 0x0000
   0x02D4: 98630000  ORI   R3, R3, 0
   0x02D8: C0600000  PUSH  R3
@@ -287,120 +274,132 @@ out_code_hex: |-
   0x02F4: 98630000  ORI   R3, R3, 0
   0x02F8: C0600000  PUSH  R3
   0x02FC: CC0000BC  CALL  0x00000BC
-  0x0300: C4040000  POP   R4
-  0x0304: C4030000  POP   R3
-  0x0308: 40641800  ADD   R3, R3, R4
-  0x030C: C0600000  PUSH  R3
-  0x0310: CC000114  CALL  0x0000114
-  0x0314: 94030000  LUI   R3, 0x0000
-  0x0318: 98630000  ORI   R3, R3, 0
-  0x031C: C0600000  PUSH  R3
-  0x0320: CC0000BC  CALL  0x00000BC
-  0x0324: CC000078  CALL  0x0000078
-  0x0328: 94030000  LUI   R3, 0x0000
-  0x032C: 98630000  ORI   R3, R3, 0
-  0x0330: C0600000  PUSH  R3
-  0x0334: CC000114  CALL  0x0000114
-  0x0338: C80002A4  JMP   0x00002A4
-  0x033C: D0000000  RET
-  0x0340: 80030000  ADDI  R3, R0, 0
-  0x0344: C0600000  PUSH  R3
-  0x0348: 94030000  LUI   R3, 0x0000
-  0x034C: 98630004  ORI   R3, R3, 4
-  0x0350: C0600000  PUSH  R3
-  0x0354: CC000114  CALL  0x0000114
+  0x0300: 80030004  ADDI  R3, R0, 4
+  0x0304: C0600000  PUSH  R3
+  0x0308: C4040000  POP   R4
+  0x030C: C4030000  POP   R3
+  0x0310: 48641800  MUL   R3, R3, R4
+  0x0314: C0600000  PUSH  R3
+  0x0318: C4040000  POP   R4
+  0x031C: C4030000  POP   R3
+  0x0320: 40641800  ADD   R3, R3, R4
+  0x0324: C0600000  PUSH  R3
+  0x0328: CC000114  CALL  0x0000114
+  0x032C: 94030000  LUI   R3, 0x0000
+  0x0330: 98630000  ORI   R3, R3, 0
+  0x0334: C0600000  PUSH  R3
+  0x0338: CC0000BC  CALL  0x00000BC
+  0x033C: CC000078  CALL  0x0000078
+  0x0340: 94030000  LUI   R3, 0x0000
+  0x0344: 98630000  ORI   R3, R3, 0
+  0x0348: C0600000  PUSH  R3
+  0x034C: CC000114  CALL  0x0000114
+  0x0350: C80002A4  JMP   0x00002A4
+  0x0354: D0000000  RET
   0x0358: 80030000  ADDI  R3, R0, 0
   0x035C: C0600000  PUSH  R3
   0x0360: 94030000  LUI   R3, 0x0000
-  0x0364: 98630000  ORI   R3, R3, 0
+  0x0364: 98630004  ORI   R3, R3, 4
   0x0368: C0600000  PUSH  R3
   0x036C: CC000114  CALL  0x0000114
-  0x0370: 94030000  LUI   R3, 0x0000
-  0x0374: 98630000  ORI   R3, R3, 0
-  0x0378: C0600000  PUSH  R3
-  0x037C: CC0000BC  CALL  0x00000BC
-  0x0380: 94030000  LUI   R3, 0x0000
-  0x0384: 98630008  ORI   R3, R3, 8
-  0x0388: C0600000  PUSH  R3
-  0x038C: CC0000BC  CALL  0x00000BC
-  0x0390: CC000154  CALL  0x0000154
-  0x0394: C4030000  POP   R3
-  0x0398: 8C030088  JZ    R3, 136
-  0x039C: 94030000  LUI   R3, 0x0000
-  0x03A0: 98630004  ORI   R3, R3, 4
-  0x03A4: C0600000  PUSH  R3
-  0x03A8: CC0000BC  CALL  0x00000BC
-  0x03AC: 94030000  LUI   R3, 0x0000
-  0x03B0: 9863000C  ORI   R3, R3, 12
-  0x03B4: C0600000  PUSH  R3
-  0x03B8: 94030000  LUI   R3, 0x0000
-  0x03BC: 98630000  ORI   R3, R3, 0
-  0x03C0: C0600000  PUSH  R3
-  0x03C4: CC0000BC  CALL  0x00000BC
-  0x03C8: C4040000  POP   R4
-  0x03CC: C4030000  POP   R3
-  0x03D0: 40641800  ADD   R3, R3, R4
-  0x03D4: C0600000  PUSH  R3
-  0x03D8: CC0000BC  CALL  0x00000BC
-  0x03DC: C4040000  POP   R4
-  0x03E0: C4030000  POP   R3
-  0x03E4: 40641800  ADD   R3, R3, R4
-  0x03E8: C0600000  PUSH  R3
-  0x03EC: 94030000  LUI   R3, 0x0000
-  0x03F0: 98630004  ORI   R3, R3, 4
+  0x0370: 80030000  ADDI  R3, R0, 0
+  0x0374: C0600000  PUSH  R3
+  0x0378: 94030000  LUI   R3, 0x0000
+  0x037C: 98630000  ORI   R3, R3, 0
+  0x0380: C0600000  PUSH  R3
+  0x0384: CC000114  CALL  0x0000114
+  0x0388: 94030000  LUI   R3, 0x0000
+  0x038C: 98630000  ORI   R3, R3, 0
+  0x0390: C0600000  PUSH  R3
+  0x0394: CC0000BC  CALL  0x00000BC
+  0x0398: 94030000  LUI   R3, 0x0000
+  0x039C: 98630008  ORI   R3, R3, 8
+  0x03A0: C0600000  PUSH  R3
+  0x03A4: CC0000BC  CALL  0x00000BC
+  0x03A8: CC000154  CALL  0x0000154
+  0x03AC: C4030000  POP   R3
+  0x03B0: 8C0300A0  JZ    R3, 160
+  0x03B4: 94030000  LUI   R3, 0x0000
+  0x03B8: 98630004  ORI   R3, R3, 4
+  0x03BC: C0600000  PUSH  R3
+  0x03C0: CC0000BC  CALL  0x00000BC
+  0x03C4: 94030000  LUI   R3, 0x0000
+  0x03C8: 9863000C  ORI   R3, R3, 12
+  0x03CC: C0600000  PUSH  R3
+  0x03D0: 94030000  LUI   R3, 0x0000
+  0x03D4: 98630000  ORI   R3, R3, 0
+  0x03D8: C0600000  PUSH  R3
+  0x03DC: CC0000BC  CALL  0x00000BC
+  0x03E0: 80030004  ADDI  R3, R0, 4
+  0x03E4: C0600000  PUSH  R3
+  0x03E8: C4040000  POP   R4
+  0x03EC: C4030000  POP   R3
+  0x03F0: 48641800  MUL   R3, R3, R4
   0x03F4: C0600000  PUSH  R3
-  0x03F8: CC000114  CALL  0x0000114
-  0x03FC: 94030000  LUI   R3, 0x0000
-  0x0400: 98630000  ORI   R3, R3, 0
+  0x03F8: C4040000  POP   R4
+  0x03FC: C4030000  POP   R3
+  0x0400: 40641800  ADD   R3, R3, R4
   0x0404: C0600000  PUSH  R3
   0x0408: CC0000BC  CALL  0x00000BC
-  0x040C: CC000078  CALL  0x0000078
-  0x0410: 94030000  LUI   R3, 0x0000
-  0x0414: 98630000  ORI   R3, R3, 0
+  0x040C: C4040000  POP   R4
+  0x0410: C4030000  POP   R3
+  0x0414: 40641800  ADD   R3, R3, R4
   0x0418: C0600000  PUSH  R3
-  0x041C: CC000114  CALL  0x0000114
-  0x0420: C8000370  JMP   0x0000370
-  0x0424: D0000000  RET
-  0x0428: 80030040  ADDI  R3, R0, 64
-  0x042C: C0600000  PUSH  R3
-  0x0430: 94030000  LUI   R3, 0x0000
-  0x0434: 98630008  ORI   R3, R3, 8
-  0x0438: C0600000  PUSH  R3
-  0x043C: CC000114  CALL  0x0000114
-  0x0440: CC00028C  CALL  0x000028C
-  0x0444: CC000340  CALL  0x0000340
-  0x0448: 94030000  LUI   R3, 0x0000
-  0x044C: 9863010C  ORI   R3, R3, 268
-  0x0450: C0600000  PUSH  R3
-  0x0454: CC0001CC  CALL  0x00001CC
-  0x0458: 94030000  LUI   R3, 0x0000
-  0x045C: 98630004  ORI   R3, R3, 4
-  0x0460: C0600000  PUSH  R3
-  0x0464: CC0000BC  CALL  0x00000BC
-  0x0468: CC000234  CALL  0x0000234
-  0x046C: CC000208  CALL  0x0000208
-  0x0470: CC000340  CALL  0x0000340
-  0x0474: 94030000  LUI   R3, 0x0000
-  0x0478: 98630154  ORI   R3, R3, 340
-  0x047C: C0600000  PUSH  R3
-  0x0480: CC0001CC  CALL  0x00001CC
-  0x0484: 94030000  LUI   R3, 0x0000
-  0x0488: 98630004  ORI   R3, R3, 4
-  0x048C: C0600000  PUSH  R3
-  0x0490: CC0000BC  CALL  0x00000BC
-  0x0494: CC000234  CALL  0x0000234
-  0x0498: CC000208  CALL  0x0000208
-  0x049C: 04000000  HALT
-
+  0x041C: 94030000  LUI   R3, 0x0000
+  0x0420: 98630004  ORI   R3, R3, 4
+  0x0424: C0600000  PUSH  R3
+  0x0428: CC000114  CALL  0x0000114
+  0x042C: 94030000  LUI   R3, 0x0000
+  0x0430: 98630000  ORI   R3, R3, 0
+  0x0434: C0600000  PUSH  R3
+  0x0438: CC0000BC  CALL  0x00000BC
+  0x043C: CC000078  CALL  0x0000078
+  0x0440: 94030000  LUI   R3, 0x0000
+  0x0444: 98630000  ORI   R3, R3, 0
+  0x0448: C0600000  PUSH  R3
+  0x044C: CC000114  CALL  0x0000114
+  0x0450: C8000388  JMP   0x0000388
+  0x0454: D0000000  RET
+  0x0458: 80030040  ADDI  R3, R0, 64
+  0x045C: C0600000  PUSH  R3
+  0x0460: 94030000  LUI   R3, 0x0000
+  0x0464: 98630008  ORI   R3, R3, 8
+  0x0468: C0600000  PUSH  R3
+  0x046C: CC000114  CALL  0x0000114
+  0x0470: CC00028C  CALL  0x000028C
+  0x0474: CC000358  CALL  0x0000358
+  0x0478: 94030000  LUI   R3, 0x0000
+  0x047C: 9863010C  ORI   R3, R3, 268
+  0x0480: C0600000  PUSH  R3
+  0x0484: CC0001CC  CALL  0x00001CC
+  0x0488: 94030000  LUI   R3, 0x0000
+  0x048C: 98630004  ORI   R3, R3, 4
+  0x0490: C0600000  PUSH  R3
+  0x0494: CC0000BC  CALL  0x00000BC
+  0x0498: CC000234  CALL  0x0000234
+  0x049C: CC000208  CALL  0x0000208
+  0x04A0: CC000358  CALL  0x0000358
+  0x04A4: 94030000  LUI   R3, 0x0000
+  0x04A8: 98630154  ORI   R3, R3, 340
+  0x04AC: C0600000  PUSH  R3
+  0x04B0: CC0001CC  CALL  0x00001CC
+  0x04B4: 94030000  LUI   R3, 0x0000
+  0x04B8: 98630004  ORI   R3, R3, 4
+  0x04BC: C0600000  PUSH  R3
+  0x04C0: CC0000BC  CALL  0x00000BC
+  0x04C4: CC000234  CALL  0x0000234
+  0x04C8: CC000208  CALL  0x0000208
+  0x04CC: 04000000  HALT
 out_stdout: |-
   Successfully translated <source_path> to <target_path>
-  Total instructions: 296, Data size: 412 bytes
+  Total instructions: 308, Data size: 412 bytes
   ============================================================
-  Code size: 296 words (1184 bytes). Data size: 103 words (412 bytes) (Harvard: separate instruction/data memories).
+  Code size: 308 words (1232 bytes). Data size: 103 words (412 bytes) (Harvard: separate instruction/data memories).
 
-  Simulation output: ''
-  Total ticks: 2547
-
+  Simulation output: 'Sum (Cold Cache):2080
+  Sum (Warm Cache):2080
+  '
+  Total ticks: 208629
 out_log: |-
   INFO     Patched variable 'I_VAR': LUI@idx=165 imm=0x0000, ORI@idx=166 imm=0x0000 -> final_byte_addr=0x00000000
   INFO     Patched variable 'I_VAR': LUI@idx=169 imm=0x0000, ORI@idx=170 imm=0x0000 -> final_byte_addr=0x00000000
@@ -408,343 +407,343 @@ out_log: |-
   INFO     Patched variable 'I_VAR': LUI@idx=180 imm=0x0000, ORI@idx=181 imm=0x0000 -> final_byte_addr=0x00000000
   INFO     Patched variable 'BIG-ARRAY': LUI@idx=185 imm=0x0000, ORI@idx=186 imm=0x000C -> final_byte_addr=0x0000000C
   INFO     Patched variable 'I_VAR': LUI@idx=188 imm=0x0000, ORI@idx=189 imm=0x0000 -> final_byte_addr=0x00000000
-  INFO     Patched variable 'I_VAR': LUI@idx=197 imm=0x0000, ORI@idx=198 imm=0x0000 -> final_byte_addr=0x00000000
-  INFO     Patched variable 'I_VAR': LUI@idx=202 imm=0x0000, ORI@idx=203 imm=0x0000 -> final_byte_addr=0x00000000
-  INFO     Patched variable 'SUM_VAR': LUI@idx=210 imm=0x0000, ORI@idx=211 imm=0x0004 -> final_byte_addr=0x00000004
-  INFO     Patched variable 'I_VAR': LUI@idx=216 imm=0x0000, ORI@idx=217 imm=0x0000 -> final_byte_addr=0x00000000
-  INFO     Patched variable 'I_VAR': LUI@idx=220 imm=0x0000, ORI@idx=221 imm=0x0000 -> final_byte_addr=0x00000000
-  INFO     Patched variable 'ARRAY-SIZE-VAR': LUI@idx=224 imm=0x0000, ORI@idx=225 imm=0x0008 -> final_byte_addr=0x00000008
-  INFO     Patched variable 'SUM_VAR': LUI@idx=231 imm=0x0000, ORI@idx=232 imm=0x0004 -> final_byte_addr=0x00000004
-  INFO     Patched variable 'BIG-ARRAY': LUI@idx=235 imm=0x0000, ORI@idx=236 imm=0x000C -> final_byte_addr=0x0000000C
-  INFO     Patched variable 'I_VAR': LUI@idx=238 imm=0x0000, ORI@idx=239 imm=0x0000 -> final_byte_addr=0x00000000
-  INFO     Patched variable 'SUM_VAR': LUI@idx=251 imm=0x0000, ORI@idx=252 imm=0x0004 -> final_byte_addr=0x00000004
-  INFO     Patched variable 'I_VAR': LUI@idx=255 imm=0x0000, ORI@idx=256 imm=0x0000 -> final_byte_addr=0x00000000
-  INFO     Patched variable 'I_VAR': LUI@idx=260 imm=0x0000, ORI@idx=261 imm=0x0000 -> final_byte_addr=0x00000000
-  INFO     Patched variable 'ARRAY-SIZE-VAR': LUI@idx=268 imm=0x0000, ORI@idx=269 imm=0x0008 -> final_byte_addr=0x00000008
-  INFO     Patched variable 'SUM_VAR': LUI@idx=278 imm=0x0000, ORI@idx=279 imm=0x0004 -> final_byte_addr=0x00000004
-  INFO     Patched variable 'SUM_VAR': LUI@idx=289 imm=0x0000, ORI@idx=290 imm=0x0004 -> final_byte_addr=0x00000004
-  INFO     Patched string 'Sum (Cold Cache):': LUI@idx=274 imm=0x0000, ORI@idx=275 imm=0x010C -> final_byte_addr=0x0000010C
-  INFO     Patched string 'Sum (Warm Cache):': LUI@idx=285 imm=0x0000, ORI@idx=286 imm=0x0154 -> final_byte_addr=0x00000154
+  INFO     Patched variable 'I_VAR': LUI@idx=203 imm=0x0000, ORI@idx=204 imm=0x0000 -> final_byte_addr=0x00000000
+  INFO     Patched variable 'I_VAR': LUI@idx=208 imm=0x0000, ORI@idx=209 imm=0x0000 -> final_byte_addr=0x00000000
+  INFO     Patched variable 'SUM_VAR': LUI@idx=216 imm=0x0000, ORI@idx=217 imm=0x0004 -> final_byte_addr=0x00000004
+  INFO     Patched variable 'I_VAR': LUI@idx=222 imm=0x0000, ORI@idx=223 imm=0x0000 -> final_byte_addr=0x00000000
+  INFO     Patched variable 'I_VAR': LUI@idx=226 imm=0x0000, ORI@idx=227 imm=0x0000 -> final_byte_addr=0x00000000
+  INFO     Patched variable 'ARRAY-SIZE-VAR': LUI@idx=230 imm=0x0000, ORI@idx=231 imm=0x0008 -> final_byte_addr=0x00000008
+  INFO     Patched variable 'SUM_VAR': LUI@idx=237 imm=0x0000, ORI@idx=238 imm=0x0004 -> final_byte_addr=0x00000004
+  INFO     Patched variable 'BIG-ARRAY': LUI@idx=241 imm=0x0000, ORI@idx=242 imm=0x000C -> final_byte_addr=0x0000000C
+  INFO     Patched variable 'I_VAR': LUI@idx=244 imm=0x0000, ORI@idx=245 imm=0x0000 -> final_byte_addr=0x00000000
+  INFO     Patched variable 'SUM_VAR': LUI@idx=263 imm=0x0000, ORI@idx=264 imm=0x0004 -> final_byte_addr=0x00000004
+  INFO     Patched variable 'I_VAR': LUI@idx=267 imm=0x0000, ORI@idx=268 imm=0x0000 -> final_byte_addr=0x00000000
+  INFO     Patched variable 'I_VAR': LUI@idx=272 imm=0x0000, ORI@idx=273 imm=0x0000 -> final_byte_addr=0x00000000
+  INFO     Patched variable 'ARRAY-SIZE-VAR': LUI@idx=280 imm=0x0000, ORI@idx=281 imm=0x0008 -> final_byte_addr=0x00000008
+  INFO     Patched variable 'SUM_VAR': LUI@idx=290 imm=0x0000, ORI@idx=291 imm=0x0004 -> final_byte_addr=0x00000004
+  INFO     Patched variable 'SUM_VAR': LUI@idx=301 imm=0x0000, ORI@idx=302 imm=0x0004 -> final_byte_addr=0x00000004
+  INFO     Patched string 'Sum (Cold Cache):': LUI@idx=286 imm=0x0000, ORI@idx=287 imm=0x010C -> final_byte_addr=0x0000010C
+  INFO     Patched string 'Sum (Warm Cache):': LUI@idx=297 imm=0x0000, ORI@idx=298 imm=0x0154 -> final_byte_addr=0x00000154
   INFO     Starting simulation...
   INFO     TICK:    0 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 61536 | DSP: 45536 | MicroPC: 0 | Zero: False
   DEBUG    TICK 1: Executing micro-op: LATCH_MAR_PC
   INFO     TICK:    1 | PC: 0x0000 | IR: 0x00000000 (NOP) | SP: 61536 | DSP: 45536 | MicroPC: 1 | Zero: False
   DEBUG    TICK 2: Executing micro-op: INSTR_READ
   WARNING  I-CACHE: MISS on read at addr 0x0000. Accessing memory.
-  INFO     TICK:    2 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:    2 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:    3 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:    3 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:    4 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:    4 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:    5 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:    5 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:    6 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:    6 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:    7 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:    7 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:    8 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:    8 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:    9 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:    9 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:   10 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   10 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:   11 | PC: 0x0000 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   11 | PC: 0x0000 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   DEBUG    TICK 12: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:   12 | PC: 0x0004 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 3 | Zero: False
+  INFO     TICK:   12 | PC: 0x0004 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 3 | Zero: False
   DEBUG    TICK 13: Executing micro-op: LATCH_PC_ADDR
-  INFO     JMP/CALL: Setting PC to 0x0428
-  INFO     TICK:   13 | PC: 0x0428 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 4 | Zero: False
+  INFO     JMP/CALL: Setting PC to 0x0458
+  INFO     TICK:   13 | PC: 0x0458 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 4 | Zero: False
   DEBUG    TICK 14: Executing micro-op: FINISH_INSTRUCTION
-  INFO     TICK:   14 | PC: 0x0428 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 0 | Zero: False
+  INFO     TICK:   14 | PC: 0x0458 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 0 | Zero: False
   DEBUG    TICK 15: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:   15 | PC: 0x0428 | IR: 0xC8000428 (JMP   0x0000428) | SP: 61536 | DSP: 45536 | MicroPC: 1 | Zero: False
+  INFO     TICK:   15 | PC: 0x0458 | IR: 0xC8000458 (JMP   0x0000458) | SP: 61536 | DSP: 45536 | MicroPC: 1 | Zero: False
   DEBUG    TICK 16: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x0428. Accessing memory.
-  INFO     TICK:   16 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  WARNING  I-CACHE: MISS on read at addr 0x0458. Accessing memory.
+  INFO     TICK:   16 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:   17 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   17 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:   18 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   18 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:   19 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   19 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:   20 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   20 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:   21 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   21 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:   22 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   22 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:   23 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   23 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:   24 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   24 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:   25 | PC: 0x0428 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   25 | PC: 0x0458 | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   DEBUG    TICK 26: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:   26 | PC: 0x042C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 3 | Zero: False
+  INFO     TICK:   26 | PC: 0x045C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 3 | Zero: False
   DEBUG    TICK 27: Executing micro-op: LATCH_A_RS
-  INFO     TICK:   27 | PC: 0x042C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 4 | Zero: False
+  INFO     TICK:   27 | PC: 0x045C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 4 | Zero: False
   DEBUG    TICK 28: Executing micro-op: LATCH_B_IMM
-  INFO     TICK:   28 | PC: 0x042C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 5 | Zero: False
+  INFO     TICK:   28 | PC: 0x045C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 5 | Zero: False
   DEBUG    TICK 29: Executing micro-op: ALU_ADD
-  INFO     TICK:   29 | PC: 0x042C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 6 | Zero: False
+  INFO     TICK:   29 | PC: 0x045C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 6 | Zero: False
   DEBUG    TICK 30: Executing micro-op: LATCH_RT_ALU
-  INFO     TICK:   30 | PC: 0x042C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 7 | Zero: False
+  INFO     TICK:   30 | PC: 0x045C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 7 | Zero: False
   DEBUG    TICK 31: Executing micro-op: FINISH_INSTRUCTION
-  INFO     TICK:   31 | PC: 0x042C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 0 | Zero: False
+  INFO     TICK:   31 | PC: 0x045C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 0 | Zero: False
   DEBUG    TICK 32: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:   32 | PC: 0x042C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 1 | Zero: False
+  INFO     TICK:   32 | PC: 0x045C | IR: 0x80030040 (ADDI  R3, R0, 64) | SP: 61536 | DSP: 45536 | MicroPC: 1 | Zero: False
   DEBUG    TICK 33: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x042C. Accessing memory.
-  INFO     TICK:   33 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  WARNING  I-CACHE: MISS on read at addr 0x045C. Accessing memory.
+  INFO     TICK:   33 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:   34 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   34 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:   35 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   35 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:   36 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   36 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:   37 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   37 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:   38 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   38 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:   39 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   39 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:   40 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   40 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:   41 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   41 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:   42 | PC: 0x042C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
+  INFO     TICK:   42 | PC: 0x045C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 2 | Zero: False
   DEBUG    TICK 43: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:   43 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 3 | Zero: False
+  INFO     TICK:   43 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 3 | Zero: False
   DEBUG    TICK 44: Executing micro-op: LATCH_A_SP
-  INFO     TICK:   44 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 4 | Zero: False
+  INFO     TICK:   44 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 4 | Zero: False
   DEBUG    TICK 45: Executing micro-op: LATCH_B_CONST_1
-  INFO     TICK:   45 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 5 | Zero: False
+  INFO     TICK:   45 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 5 | Zero: False
   DEBUG    TICK 46: Executing micro-op: ALU_SUB
-  INFO     TICK:   46 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 6 | Zero: False
+  INFO     TICK:   46 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45536 | MicroPC: 6 | Zero: False
   DEBUG    TICK 47: Executing micro-op: LATCH_SP_ALU
-  INFO     TICK:   47 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 7 | Zero: False
+  INFO     TICK:   47 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 7 | Zero: False
   DEBUG    TICK 48: Executing micro-op: LATCH_MAR_ALU
-  INFO     TICK:   48 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 8 | Zero: False
+  INFO     TICK:   48 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 8 | Zero: False
   DEBUG    TICK 49: Executing micro-op: LATCH_A_RS
-  INFO     TICK:   49 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 9 | Zero: False
+  INFO     TICK:   49 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 9 | Zero: False
   DEBUG    TICK 50: Executing micro-op: LATCH_MDR_A
-  INFO     TICK:   50 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 10 | Zero: False
+  INFO     TICK:   50 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 10 | Zero: False
   DEBUG    TICK 51: Executing micro-op: CACHE_WRITE
   WARNING  D-CACHE: MISS on write at addr 0xB1DC. Writing to memory.
-  INFO     TICK:   51 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   51 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:   52 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   52 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:   53 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   53 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:   54 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   54 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:   55 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   55 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:   56 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   56 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:   57 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   57 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:   58 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   58 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:   59 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   59 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:   60 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
+  INFO     TICK:   60 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 11 | Zero: False
   DEBUG    TICK 61: Executing micro-op: FINISH_INSTRUCTION
-  INFO     TICK:   61 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 0 | Zero: False
+  INFO     TICK:   61 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 0 | Zero: False
   DEBUG    TICK 62: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:   62 | PC: 0x0430 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 1 | Zero: False
+  INFO     TICK:   62 | PC: 0x0460 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 1 | Zero: False
   DEBUG    TICK 63: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x0430. Accessing memory.
-  INFO     TICK:   63 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  WARNING  I-CACHE: MISS on read at addr 0x0460. Accessing memory.
+  INFO     TICK:   63 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:   64 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   64 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:   65 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   65 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:   66 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   66 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:   67 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   67 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:   68 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   68 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:   69 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   69 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:   70 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   70 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:   71 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   71 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:   72 | PC: 0x0430 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   72 | PC: 0x0460 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   DEBUG    TICK 73: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:   73 | PC: 0x0434 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 3 | Zero: False
+  INFO     TICK:   73 | PC: 0x0464 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 3 | Zero: False
   DEBUG    TICK 74: Executing micro-op: LATCH_B_IMM
-  INFO     TICK:   74 | PC: 0x0434 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 4 | Zero: False
+  INFO     TICK:   74 | PC: 0x0464 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 4 | Zero: False
   DEBUG    TICK 75: Executing micro-op: ALU_LUI
-  INFO     TICK:   75 | PC: 0x0434 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 5 | Zero: True
+  INFO     TICK:   75 | PC: 0x0464 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 5 | Zero: True
   DEBUG    TICK 76: Executing micro-op: LATCH_RT_ALU
-  INFO     TICK:   76 | PC: 0x0434 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 6 | Zero: True
+  INFO     TICK:   76 | PC: 0x0464 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 6 | Zero: True
   DEBUG    TICK 77: Executing micro-op: FINISH_INSTRUCTION
-  INFO     TICK:   77 | PC: 0x0434 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 0 | Zero: True
+  INFO     TICK:   77 | PC: 0x0464 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 0 | Zero: True
   DEBUG    TICK 78: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:   78 | PC: 0x0434 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 1 | Zero: True
+  INFO     TICK:   78 | PC: 0x0464 | IR: 0x94030000 (LUI   R3, 0x0000) | SP: 61536 | DSP: 45532 | MicroPC: 1 | Zero: True
   DEBUG    TICK 79: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x0434. Accessing memory.
-  INFO     TICK:   79 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  WARNING  I-CACHE: MISS on read at addr 0x0464. Accessing memory.
+  INFO     TICK:   79 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:   80 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   80 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:   81 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   81 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:   82 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   82 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:   83 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   83 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:   84 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   84 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:   85 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   85 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:   86 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   86 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:   87 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   87 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:   88 | PC: 0x0434 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
+  INFO     TICK:   88 | PC: 0x0464 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: True
   DEBUG    TICK 89: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:   89 | PC: 0x0438 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 3 | Zero: True
+  INFO     TICK:   89 | PC: 0x0468 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 3 | Zero: True
   DEBUG    TICK 90: Executing micro-op: LATCH_A_RS
-  INFO     TICK:   90 | PC: 0x0438 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 4 | Zero: True
+  INFO     TICK:   90 | PC: 0x0468 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 4 | Zero: True
   DEBUG    TICK 91: Executing micro-op: LATCH_B_IMM
-  INFO     TICK:   91 | PC: 0x0438 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 5 | Zero: True
+  INFO     TICK:   91 | PC: 0x0468 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 5 | Zero: True
   DEBUG    TICK 92: Executing micro-op: ALU_OR
-  INFO     TICK:   92 | PC: 0x0438 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 6 | Zero: False
+  INFO     TICK:   92 | PC: 0x0468 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 6 | Zero: False
   DEBUG    TICK 93: Executing micro-op: LATCH_RT_ALU
-  INFO     TICK:   93 | PC: 0x0438 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 7 | Zero: False
+  INFO     TICK:   93 | PC: 0x0468 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 7 | Zero: False
   DEBUG    TICK 94: Executing micro-op: FINISH_INSTRUCTION
-  INFO     TICK:   94 | PC: 0x0438 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 0 | Zero: False
+  INFO     TICK:   94 | PC: 0x0468 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 0 | Zero: False
   DEBUG    TICK 95: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:   95 | PC: 0x0438 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 1 | Zero: False
+  INFO     TICK:   95 | PC: 0x0468 | IR: 0x98630008 (ORI   R3, R3, 8) | SP: 61536 | DSP: 45532 | MicroPC: 1 | Zero: False
   DEBUG    TICK 96: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x0438. Accessing memory.
-  INFO     TICK:   96 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  WARNING  I-CACHE: MISS on read at addr 0x0468. Accessing memory.
+  INFO     TICK:   96 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:   97 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   97 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:   98 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   98 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:   99 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:   99 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:  100 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:  100 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:  101 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:  101 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:  102 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:  102 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:  103 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:  103 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:  104 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:  104 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:  105 | PC: 0x0438 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
+  INFO     TICK:  105 | PC: 0x0468 | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 2 | Zero: False
   DEBUG    TICK 106: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:  106 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 3 | Zero: False
+  INFO     TICK:  106 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 3 | Zero: False
   DEBUG    TICK 107: Executing micro-op: LATCH_A_SP
-  INFO     TICK:  107 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 4 | Zero: False
+  INFO     TICK:  107 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 4 | Zero: False
   DEBUG    TICK 108: Executing micro-op: LATCH_B_CONST_1
-  INFO     TICK:  108 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 5 | Zero: False
+  INFO     TICK:  108 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 5 | Zero: False
   DEBUG    TICK 109: Executing micro-op: ALU_SUB
-  INFO     TICK:  109 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 6 | Zero: False
+  INFO     TICK:  109 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45532 | MicroPC: 6 | Zero: False
   DEBUG    TICK 110: Executing micro-op: LATCH_SP_ALU
-  INFO     TICK:  110 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 7 | Zero: False
+  INFO     TICK:  110 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 7 | Zero: False
   DEBUG    TICK 111: Executing micro-op: LATCH_MAR_ALU
-  INFO     TICK:  111 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 8 | Zero: False
+  INFO     TICK:  111 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 8 | Zero: False
   DEBUG    TICK 112: Executing micro-op: LATCH_A_RS
-  INFO     TICK:  112 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 9 | Zero: False
+  INFO     TICK:  112 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 9 | Zero: False
   DEBUG    TICK 113: Executing micro-op: LATCH_MDR_A
-  INFO     TICK:  113 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 10 | Zero: False
+  INFO     TICK:  113 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 10 | Zero: False
   DEBUG    TICK 114: Executing micro-op: CACHE_WRITE
   WARNING  D-CACHE: MISS on write at addr 0xB1D8. Writing to memory.
-  INFO     TICK:  114 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  114 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:  115 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  115 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:  116 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  116 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:  117 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  117 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:  118 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  118 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:  119 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  119 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:  120 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  120 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:  121 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  121 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:  122 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  122 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:  123 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  123 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 11 | Zero: False
   DEBUG    TICK 124: Executing micro-op: FINISH_INSTRUCTION
-  INFO     TICK:  124 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 0 | Zero: False
+  INFO     TICK:  124 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 0 | Zero: False
   DEBUG    TICK 125: Executing micro-op: LATCH_MAR_PC
-  INFO     TICK:  125 | PC: 0x043C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 1 | Zero: False
+  INFO     TICK:  125 | PC: 0x046C | IR: 0xC0600000 (PUSH  R3) | SP: 61536 | DSP: 45528 | MicroPC: 1 | Zero: False
   DEBUG    TICK 126: Executing micro-op: INSTR_READ
-  WARNING  I-CACHE: MISS on read at addr 0x043C. Accessing memory.
-  INFO     TICK:  126 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  WARNING  I-CACHE: MISS on read at addr 0x046C. Accessing memory.
+  INFO     TICK:  126 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:  127 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  127 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:  128 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  128 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:  129 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  129 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:  130 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  130 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:  131 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  131 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:  132 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  132 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:  133 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  133 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:  134 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  134 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:  135 | PC: 0x043C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
+  INFO     TICK:  135 | PC: 0x046C | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 2 | Zero: False
   DEBUG    TICK 136: Executing micro-op: LATCH_PC_INC
-  INFO     TICK:  136 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 3 | Zero: False
+  INFO     TICK:  136 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 3 | Zero: False
   DEBUG    TICK 137: Executing micro-op: LATCH_A_SP
-  INFO     TICK:  137 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 4 | Zero: False
+  INFO     TICK:  137 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 4 | Zero: False
   DEBUG    TICK 138: Executing micro-op: LATCH_B_CONST_1
-  INFO     TICK:  138 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 5 | Zero: False
+  INFO     TICK:  138 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 5 | Zero: False
   DEBUG    TICK 139: Executing micro-op: ALU_SUB
-  INFO     TICK:  139 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 6 | Zero: False
+  INFO     TICK:  139 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61536 | DSP: 45528 | MicroPC: 6 | Zero: False
   DEBUG    TICK 140: Executing micro-op: LATCH_SP_ALU
-  INFO     TICK:  140 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 7 | Zero: False
+  INFO     TICK:  140 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 7 | Zero: False
   DEBUG    TICK 141: Executing micro-op: LATCH_MAR_ALU
-  INFO     TICK:  141 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 8 | Zero: False
+  INFO     TICK:  141 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 8 | Zero: False
   DEBUG    TICK 142: Executing micro-op: LATCH_A_PC
-  INFO     CALL: Saving return address 0x0440
-  INFO     TICK:  142 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 9 | Zero: False
+  INFO     CALL: Saving return address 0x0470
+  INFO     TICK:  142 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 9 | Zero: False
   DEBUG    TICK 143: Executing micro-op: LATCH_MDR_A
-  INFO     TICK:  143 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 10 | Zero: False
+  INFO     TICK:  143 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 10 | Zero: False
   DEBUG    TICK 144: Executing micro-op: CACHE_WRITE
   WARNING  D-CACHE: MISS on write at addr 0xF05C. Writing to memory.
-  INFO     TICK:  144 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  144 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 8 cycles remaining.
-  INFO     TICK:  145 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  145 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 7 cycles remaining.
-  INFO     TICK:  146 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  146 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 6 cycles remaining.
-  INFO     TICK:  147 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  147 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 5 cycles remaining.
-  INFO     TICK:  148 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  148 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 4 cycles remaining.
-  INFO     TICK:  149 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  149 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 3 cycles remaining.
-  INFO     TICK:  150 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  150 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 2 cycles remaining.
-  INFO     TICK:  151 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  151 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 1 cycles remaining.
-  INFO     TICK:  152 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  152 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   INFO     STALL: 0 cycles remaining.
-  INFO     TICK:  153 | PC: 0x0440 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
+  INFO     TICK:  153 | PC: 0x0470 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 11 | Zero: False
   DEBUG    TICK 154: Executing micro-op: LATCH_PC_ADDR
   INFO     JMP/CALL: Setting PC to 0x0114
   INFO     TICK:  154 | PC: 0x0114 | IR: 0xCC000114 (CALL  0x0000114) | SP: 61532 | DSP: 45528 | MicroPC: 12 | Zero: False

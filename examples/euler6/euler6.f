@@ -1,9 +1,3 @@
-\ Задача №6 проекта "Эйлер"
-\
-
-\ ======================================================================
-\ --- Утилиты для вывода  ---
-\ ======================================================================
 : CR 10 EMIT ;
 : DIGIT>CHAR 48 + ;
 : U.SIMPLE
@@ -14,11 +8,9 @@
     THEN
 ;
 
-
-VARIABLE I_VAR           \ Счетчик цикла
-VARIABLE SUM             \ Для хранения (1 + 2 + ... + 100)
-VARIABLE SUM-OF-SQUARES  \ Для хранения (1*1 + 2*2 + ... + 100*100)
-
+VARIABLE I_VAR
+VARIABLE SUM
+VARIABLE SUM-OF-SQUARES
 
 : SOLVE-EULER-6
     0 SUM !
@@ -30,16 +22,16 @@ VARIABLE SUM-OF-SQUARES  \ Для хранения (1*1 + 2*2 + ... + 100*100)
     WHILE
         SUM @ I_VAR @ + SUM !
 
-        I_VAR @ DUP *          \ ( i*i )
-        SUM-OF-SQUARES @ +     \ ( sum_sq + i*i )
-        SUM-OF-SQUARES !       \ Сохраняем
+        I_VAR @ DUP *
+        SUM-OF-SQUARES @ +
+        SUM-OF-SQUARES !
 
         I_VAR @ 1+ I_VAR !
     REPEAT
 
-    SUM @ DUP *              \ ( square_of_sum )
-    SUM-OF-SQUARES @         \ ( square_of_sum  sum_of_squares )
-    -                        \ ( difference )
+    SUM @ DUP *
+    SUM-OF-SQUARES @
+    -
 
     U.SIMPLE
     CR

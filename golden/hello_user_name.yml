@@ -4,21 +4,18 @@ in_source: |-
   s" Hello, " TYPE
 
   BEGIN
-      KEY DUP      \ ( char char ) -- читаем символ и дублируем
-      10 <>        \ ( char flag ) -- сравниваем с ENTER, flag=true если НЕ ENTER
+      KEY DUP
+      10 <>
   WHILE
-      DUP EMIT     \ ( char ) -- печатаем символ
+      DUP EMIT
   REPEAT
 
   2DROP
 
   s" !" TYPE
   HALT
-
-in_stdin: "Alice\n"
-
+in_stdin: Alice\n
 in_limit: 500000
-
 in_cache_size: 256
 
 out_code: !!binary |
@@ -205,8 +202,8 @@ out_stdout: |-
   Code size: 159 words (636 bytes). Data size: 28 words (112 bytes) (Harvard: separate instruction/data memories).
 
   Simulation output: 'What is your name?
-  Hello,Alice!'
-  Total ticks: 6721
+  Hello,Alice\n'
+  Total ticks: 6749
 
 out_log: |-
   INFO     Patched string 'What is your name?': LUI@idx=130 imm=0x0000, ORI@idx=131 imm=0x0024 -> final_byte_addr=0x00000024
