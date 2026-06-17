@@ -129,9 +129,7 @@ def generate_one(test: dict[str, str | int], out_dir: str) -> None:
 
         class _LogHandler(logging.Handler):
             def emit(self, record: logging.LogRecord) -> None:
-                caplog_records.append(
-                    f"{record.levelname:<8} {record.getMessage()}"
-                )
+                caplog_records.append(f"{record.levelname:<8} {record.getMessage()}")
 
         log_handler = _LogHandler()
         logging.root.addHandler(log_handler)

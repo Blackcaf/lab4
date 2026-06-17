@@ -404,9 +404,7 @@ class ControlUnit:
                 dp.alu_op(MicroOp.ALU_ADD)
                 dp.pc = dp.alu_out
 
-    def _handle_cache_operations(
-        self, op: MicroOp, dp: "DataPath"
-    ):
+    def _handle_cache_operations(self, op: MicroOp, dp: "DataPath"):
         if op == MicroOp.INSTR_READ:
             data, latency = dp.instruction_cache.read(dp.mar)
             dp.ir_reg = data
