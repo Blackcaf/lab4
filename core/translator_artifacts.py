@@ -4,6 +4,7 @@ import struct
 
 from core.isa import Instruction
 
+
 def write_binary_and_listing(
     target_file: str,
     instructions: list[Instruction],

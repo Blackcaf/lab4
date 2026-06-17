@@ -19,6 +19,7 @@ from core.microcode import MicroOp, get_microcode_rom
 CACHE_HIT_LATENCY = 1
 CACHE_MISS_LATENCY = 10
 
+
 class DecodedInstruction(TypedDict):
     opcode: Opcode
     rs: int
@@ -26,6 +27,7 @@ class DecodedInstruction(TypedDict):
     rd: int
     imm: int
     addr: int
+
 
 class CacheLine:
     def __init__(self) -> None:
@@ -36,8 +38,8 @@ class CacheLine:
     def __repr__(self) -> str:
         return f"CacheLine(valid={self.valid}, tag={self.tag}, data={hex(self.data)})"
 
-class Cache:
 
+class Cache:
     def __init__(self, size_in_lines: int, memory: "Memory", name: str) -> None:
         assert size_in_lines > 0 and (
             size_in_lines & (size_in_lines - 1) == 0
@@ -92,8 +94,8 @@ class Cache:
 
         return latency
 
-class Memory:
 
+class Memory:
     def __init__(self, size: int) -> None:
         self.size = size
         self.memory = [0] * (size // 4)
@@ -118,6 +120,7 @@ class Memory:
         self._port_used = True
         return self.memory[addr >> 2]
 
+
 class PortController:
     def __init__(self, input_buffer: list[str]) -> None:
         self.input_buffer: deque[str] = deque(input_buffer)
@@ -140,6 +143,7 @@ class PortController:
             logging.info(f"PORT I/O: Read from INPUT port {port}: '{char}'")
             return ord(char)
         raise ValueError(f"Unknown input port: {port}")
+
 
 class DataPath:
     def __init__(self, memory_size: int, cache_size: int, input_buffer: list[str]):
@@ -224,6 +228,7 @@ class DataPath:
             raise ValueError(f"Unknown ALU micro-op: {op}")
         self.zero_flag = self.alu_out == 0
         self.gpr[0] = 0
+
 
 class ControlUnit:
     def __init__(self, datapath: DataPath):
@@ -400,7 +405,7 @@ class ControlUnit:
                 dp.pc = dp.alu_out
 
     def _handle_cache_operations(
-        self, op: MicroOp, ir: DecodedInstruction, dp: "DataPath"
+        self, op: MicroOp, dp: "DataPath"
     ):
         if op == MicroOp.INSTR_READ:
             data, latency = dp.instruction_cache.read(dp.mar)
@@ -459,7 +464,7 @@ class ControlUnit:
             or op == MicroOp.INSTR_READ
             or op == MicroOp.HALT_PROCESSOR
         ):
-            self._handle_cache_operations(op, ir, dp)
+            self._handle_cache_operations(op, dp)
         elif op.name.startswith("PORT_"):
             self._handle_port_operations(op, ir, dp)
         elif op == MicroOp.FINISH_INSTRUCTION:
@@ -468,6 +473,7 @@ class ControlUnit:
             raise ValueError(f"Unknown micro-op during execution: {op}")
 
         dp.gpr[0] = 0
+
 
 def _run_simulation_loop(control_unit: "ControlUnit", datapath: "DataPath", limit: int):
     while not control_unit.halted and control_unit.tick_counter < limit:
@@ -509,6 +515,7 @@ def _run_simulation_loop(control_unit: "ControlUnit", datapath: "DataPath", limi
     elif control_unit.tick_counter >= limit:
         logging.warning("Simulation limit reached.")
 
+
 def simulation(binary_code: bytes, input_str: str, limit: int, cache_size: int):
     words = bytes_to_words(binary_code)
     code_words, data_words = split_code_and_data(words)
@@ -545,6 +552,7 @@ def simulation(binary_code: bytes, input_str: str, limit: int, cache_size: int):
 
     return output, control_unit.tick_counter
 
+
 def main(code_file: str, input_file: str):
     logging.basicConfig(level=logging.INFO, format="%(levelname)-8s %(message)s")
     try:
@@ -569,6 +577,7 @@ def main(code_file: str, input_file: str):
     print(f"Simulation output: '{output}'")
     print(f"Total ticks: {ticks}")
     print("-" * 40)
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

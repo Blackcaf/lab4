@@ -4,6 +4,7 @@ from enum import Enum, auto
 
 from core.isa import Opcode
 
+
 class MicroOp(Enum):
     LATCH_PC_INC = auto()
     LATCH_PC_ADDR = auto()
@@ -54,6 +55,7 @@ class MicroOp(Enum):
     BRANCH_IF_NOT_ZERO = auto()
     FINISH_INSTRUCTION = auto()
     HALT_PROCESSOR = auto()
+
 
 def get_microcode_rom() -> dict[Opcode, list[MicroOp]]:
     fetch_cycle = [

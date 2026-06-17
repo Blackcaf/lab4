@@ -65,10 +65,12 @@ TESTS: list[dict[str, str | int]] = [
 
 MAX_LOG_LINES = 500
 
+
 def _normalize_log(text: str) -> str:
     text = re.sub(r"([A-Za-z]:)?[/\\].*?[/\\]tmp[\w\-]+", "<tmp>", text)
     text = re.sub(r"root:[^:]+:\d+ ", "", text)
     return text
+
 
 def _yaml_block_scalar(key: str, value: str, chomp: str = "-") -> str:
     lines = value.split("\n")
@@ -80,10 +82,12 @@ def _yaml_block_scalar(key: str, value: str, chomp: str = "-") -> str:
         return f"{key}: |{suffix}\n"
     return f"{key}: |{suffix}\n" + "\n".join(f"  {line}" for line in lines) + "\n"
 
+
 def _yaml_binary(key: str, data: bytes) -> str:
     b64 = base64.b64encode(data).decode("ascii")
     lines = [b64[i : i + 76] for i in range(0, len(b64), 76)]
     return f"{key}: !!binary |\n" + "\n".join(f"  {line}" for line in lines) + "\n"
+
 
 def _yaml_scalar(key: str, value: str) -> str:
     if value == "":
@@ -99,6 +103,7 @@ def _yaml_scalar(key: str, value: str) -> str:
         escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
         return f'{key}: "{escaped}"\n'
     return f"{key}: {value}\n"
+
 
 def generate_one(test: dict[str, str | int], out_dir: str) -> None:
     name = str(test["name"])
@@ -122,13 +127,13 @@ def generate_one(test: dict[str, str | int], out_dir: str) -> None:
 
         caplog_records: list[str] = []
 
-        def _capture_log(msg: str) -> None:
-            caplog_records.append(msg)
+        class _LogHandler(logging.Handler):
+            def emit(self, record: logging.LogRecord) -> None:
+                caplog_records.append(
+                    f"{record.levelname:<8} {record.getMessage()}"
+                )
 
-        log_handler = logging.Handler()
-        log_handler.emit = lambda record: caplog_records.append(
-            f"{record.levelname:<8} {record.getMessage()}"
-        )
+        log_handler = _LogHandler()
         logging.root.addHandler(log_handler)
         logging.root.setLevel(logging.DEBUG)
 
@@ -187,11 +192,13 @@ def generate_one(test: dict[str, str | int], out_dir: str) -> None:
 
         print(f"Generated {out_path}")
 
+
 def main() -> None:
     golden_dir = os.path.join(os.path.dirname(__file__), "golden")
     os.makedirs(golden_dir, exist_ok=True)
     for test in TESTS:
         generate_one(test, golden_dir)
+
 
 if __name__ == "__main__":
     main()

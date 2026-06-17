@@ -1,8 +1,8 @@
 import struct
 from enum import Enum
 
-class Opcode(Enum):
 
+class Opcode(Enum):
     NOP = 0x00
     HALT = 0x01
 
@@ -37,6 +37,7 @@ class Opcode(Enum):
     JMPR = 0x35
     CALLR = 0x36
 
+
 class Reg(Enum):
     ZERO = 0
     SP = 1
@@ -47,9 +48,11 @@ class Reg(Enum):
     T3 = 6
     A1 = 7
 
+
 MEMORY_SIZE = 65536
 IO_INPUT_PORT = 0
 IO_OUTPUT_PORT = 1
+
 
 class Instruction:
     _R_TYPE_OPCODES = {
