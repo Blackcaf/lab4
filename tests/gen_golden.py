@@ -1,5 +1,3 @@
-"""Generate golden test YAML files in brainfuck style."""
-
 from __future__ import annotations
 
 import base64
@@ -65,21 +63,16 @@ TESTS: list[dict[str, str | int]] = [
     },
 ]
 
-
 MAX_LOG_LINES = 500
 
-
 def _normalize_log(text: str) -> str:
-    """Replace temp dir paths with <tmp> and strip logger info."""
     text = re.sub(r"([A-Za-z]:)?[/\\].*?[/\\]tmp[\w\-]+", "<tmp>", text)
     text = re.sub(r"root:[^:]+:\d+ ", "", text)
     return text
 
-
 def _yaml_block_scalar(key: str, value: str, chomp: str = "-") -> str:
-    """Format a YAML block scalar. chomp: '-' for strip, '' for keep."""
     lines = value.split("\n")
-    # Remove trailing empty lines
+
     while lines and lines[-1] == "":
         lines.pop()
     suffix = chomp
@@ -87,16 +80,12 @@ def _yaml_block_scalar(key: str, value: str, chomp: str = "-") -> str:
         return f"{key}: |{suffix}\n"
     return f"{key}: |{suffix}\n" + "\n".join(f"  {line}" for line in lines) + "\n"
 
-
 def _yaml_binary(key: str, data: bytes) -> str:
-    """Format binary data as YAML !!binary block scalar."""
     b64 = base64.b64encode(data).decode("ascii")
     lines = [b64[i : i + 76] for i in range(0, len(b64), 76)]
     return f"{key}: !!binary |\n" + "\n".join(f"  {line}" for line in lines) + "\n"
 
-
 def _yaml_scalar(key: str, value: str) -> str:
-    """Format a plain YAML scalar. Uses double-quoted for values with special chars."""
     if value == "":
         return f"{key}: ''\n"
     needs_quoting = (
@@ -110,7 +99,6 @@ def _yaml_scalar(key: str, value: str) -> str:
         escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
         return f'{key}: "{escaped}"\n'
     return f"{key}: {value}\n"
-
 
 def generate_one(test: dict[str, str | int], out_dir: str) -> None:
     name = str(test["name"])
@@ -132,14 +120,13 @@ def generate_one(test: dict[str, str | int], out_dir: str) -> None:
         with open(tmp_input, "w", encoding="utf-8") as f:
             f.write(stdin)
 
-        # Run translator + simulation (same as golden_test.py)
         caplog_records: list[str] = []
 
         def _capture_log(msg: str) -> None:
             caplog_records.append(msg)
 
         log_handler = logging.Handler()
-        log_handler.emit = lambda record: caplog_records.append(  # type: ignore[assignment]
+        log_handler.emit = lambda record: caplog_records.append(
             f"{record.levelname:<8} {record.getMessage()}"
         )
         logging.root.addHandler(log_handler)
@@ -165,11 +152,9 @@ def generate_one(test: dict[str, str | int], out_dir: str) -> None:
             print(f"\nSimulation output: '{output}'")
             print(f"Total ticks: {ticks}")
 
-        # Read hex listing
         with open(tmp_target + ".txt", "r", encoding="utf-8", newline="") as f:
             hex_listing = f.read()
 
-        # Normalize paths in stdout
         stdout_text = stdout_io.getvalue()
         stdout_text = re.sub(
             r"Successfully translated .*",
@@ -180,14 +165,12 @@ def generate_one(test: dict[str, str | int], out_dir: str) -> None:
             r"([A-Za-z]:)?[/\\].*?[/\\]tmp[\w\-]+", "<tmp>", stdout_text
         )
 
-        # Build log
         log_text = "\n".join(caplog_records)
         log_text = _normalize_log(log_text)
         log_lines = log_text.splitlines()
         log_text = "\n".join(log_lines[:MAX_LOG_LINES])
         log_text = log_text.rstrip("\n") + "\nEOF"
 
-        # Build YAML
         parts: list[str] = []
         parts.append(_yaml_block_scalar("in_source", source_code.rstrip("\n")))
         parts.append(_yaml_scalar("in_stdin", stdin))
@@ -204,13 +187,11 @@ def generate_one(test: dict[str, str | int], out_dir: str) -> None:
 
         print(f"Generated {out_path}")
 
-
 def main() -> None:
     golden_dir = os.path.join(os.path.dirname(__file__), "golden")
     os.makedirs(golden_dir, exist_ok=True)
     for test in TESTS:
         generate_one(test, golden_dir)
-
 
 if __name__ == "__main__":
     main()

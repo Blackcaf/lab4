@@ -19,7 +19,6 @@ from core.microcode import MicroOp, get_microcode_rom
 CACHE_HIT_LATENCY = 1
 CACHE_MISS_LATENCY = 10
 
-
 class DecodedInstruction(TypedDict):
     opcode: Opcode
     rs: int
@@ -27,7 +26,6 @@ class DecodedInstruction(TypedDict):
     rd: int
     imm: int
     addr: int
-
 
 class CacheLine:
     def __init__(self) -> None:
@@ -38,12 +36,7 @@ class CacheLine:
     def __repr__(self) -> str:
         return f"CacheLine(valid={self.valid}, tag={self.tag}, data={hex(self.data)})"
 
-
 class Cache:
-    """
-    Модель кеш-памяти. Реализован как direct-mapped кеш.
-    Взаимодействует с основной памятью.
-    """
 
     def __init__(self, size_in_lines: int, memory: "Memory", name: str) -> None:
         assert size_in_lines > 0 and (
@@ -99,9 +92,7 @@ class Cache:
 
         return latency
 
-
 class Memory:
-    """Однопортовая память: в каждом тике допустима только одна операция (read ИЛИ write)."""
 
     def __init__(self, size: int) -> None:
         self.size = size
@@ -127,7 +118,6 @@ class Memory:
         self._port_used = True
         return self.memory[addr >> 2]
 
-
 class PortController:
     def __init__(self, input_buffer: list[str]) -> None:
         self.input_buffer: deque[str] = deque(input_buffer)
@@ -150,7 +140,6 @@ class PortController:
             logging.info(f"PORT I/O: Read from INPUT port {port}: '{char}'")
             return ord(char)
         raise ValueError(f"Unknown input port: {port}")
-
 
 class DataPath:
     def __init__(self, memory_size: int, cache_size: int, input_buffer: list[str]):
@@ -214,7 +203,6 @@ class DataPath:
         }
 
     def alu_op(self, op: MicroOp):
-        """Выполняет операцию в АЛУ."""
         operations = {
             MicroOp.ALU_ADD: lambda a, b: a + b,
             MicroOp.ALU_SUB: lambda a, b: a - b,
@@ -236,7 +224,6 @@ class DataPath:
             raise ValueError(f"Unknown ALU micro-op: {op}")
         self.zero_flag = self.alu_out == 0
         self.gpr[0] = 0
-
 
 class ControlUnit:
     def __init__(self, datapath: DataPath):
@@ -482,7 +469,6 @@ class ControlUnit:
 
         dp.gpr[0] = 0
 
-
 def _run_simulation_loop(control_unit: "ControlUnit", datapath: "DataPath", limit: int):
     while not control_unit.halted and control_unit.tick_counter < limit:
         datapath.instruction_memory.tick()
@@ -523,7 +509,6 @@ def _run_simulation_loop(control_unit: "ControlUnit", datapath: "DataPath", limi
     elif control_unit.tick_counter >= limit:
         logging.warning("Simulation limit reached.")
 
-
 def simulation(binary_code: bytes, input_str: str, limit: int, cache_size: int):
     words = bytes_to_words(binary_code)
     code_words, data_words = split_code_and_data(words)
@@ -560,7 +545,6 @@ def simulation(binary_code: bytes, input_str: str, limit: int, cache_size: int):
 
     return output, control_unit.tick_counter
 
-
 def main(code_file: str, input_file: str):
     logging.basicConfig(level=logging.INFO, format="%(levelname)-8s %(message)s")
     try:
@@ -585,7 +569,6 @@ def main(code_file: str, input_file: str):
     print(f"Simulation output: '{output}'")
     print(f"Total ticks: {ticks}")
     print("-" * 40)
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

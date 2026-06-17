@@ -1,10 +1,8 @@
 class TranslatorError(Exception):
-    """Базовый класс ошибок транслятора."""
-
+    pass
 
 class TranslatorSyntaxError(TranslatorError):
-    """Неверный синтаксис исходной программы."""
-
+    pass
 
 class UnknownWordError(TranslatorError):
-    """Неизвестное слово/токен при трансляции."""
+    pass

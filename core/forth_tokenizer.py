@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 def tokenize_source(source: str) -> list[str]:
     lines = source.split("\n")
     tokens: list[str] = []

@@ -10,13 +10,7 @@ from core.isa import IO_INPUT_PORT, IO_OUTPUT_PORT, Instruction, Opcode, Reg
 from core.translator_artifacts import write_binary_and_listing
 from core.translator_exceptions import TranslatorSyntaxError, UnknownWordError
 
-
 class Translator:
-    """
-    Класс транслятора. Преобразует исходный код на Forth в список
-    машинных инструкций и секцию данных.
-    """
-
     def __init__(self):
         self.code: list[Instruction] = []
         self.symbols: dict[str, Any] = self._get_built_in_symbols()
@@ -852,7 +846,6 @@ class Translator:
 
         return self.code, data_section_words
 
-
 def main(source_file: str, target_file: str):
     with open(source_file, "r", encoding="utf-8") as f:
         source_code = f.read()
@@ -865,7 +858,6 @@ def main(source_file: str, target_file: str):
     print(
         f"Total instructions: {len(instructions)}, Data size: {len(data_words) * 4} bytes"
     )
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
